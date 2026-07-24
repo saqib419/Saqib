@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | Admin — Permissions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy:        "#0A1424",
+          "navy-2":    "#0F2038",
+          "navy-3":    "#16304F",
+          teal:        "#0FA89A",
+          "teal-2":    "#33D9C8",
+          "teal-deep": "#0A6E64",
+          gold:        "#B9924F",
+          "gold-soft": "rgba(185,146,79,0.12)",
+          mist:        "#F5F7FA",
+          "mist-2":    "#EEF2F6",
+          ink:         "#0B1220",
+          "ink-soft":  "#56657B",
+          "ink-faint": "#8B97A8",
+          line:        "rgba(11,18,32,0.08)",
+        },
+        fontFamily: {
+          display: ["DM Serif Display", "serif"],
+          sans:    ["DM Sans", "sans-serif"],
+          mono:    ["JetBrains Mono", "monospace"],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'DM Sans', sans-serif;
+    background:var(--mist);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+  ::selection{background:rgba(15,168,154,0.18);}
+
+  .app-shell{display:flex; min-height:100dvh;}
+
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px;
+    width:240px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); transition:transform .3s ease; } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:272px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-radius:14px;
+    color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; margin:1px 12px;
+    text-decoration:none; position:relative;
+  }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+
+  .panel{
+    background:#fff; border:1px solid var(--line); border-radius:20px;
+    box-shadow:0 1px 2px rgba(11,18,32,0.03);
+  }
+  .topbar{
+    position:sticky; top:16px; z-index:50; margin:0 16px 24px 16px;
+    border-radius:20px; background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+    padding:14px 22px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .chip{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+  .chip-teal{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+  .chip-grey{ background:var(--mist-2); color:var(--ink-soft); }
+  .chip-red{ background:rgba(220,38,38,0.1); color:#DC2626; }
+
+  .info-banner{
+    background:var(--gold-soft); border:1px solid rgba(185,146,79,0.25);
+    border-radius:14px; padding:13px 16px; font-size:12.5px; color:#7A5F2E; line-height:1.55;
+  }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; padding:10px 12px; color:var(--ink-faint); font-size:11px; text-transform:uppercase; letter-spacing:.04em; font-weight:700; border-bottom:1px solid var(--line); }
+  td{ padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  tr:hover td{ background:var(--mist); }
+
+  select.scope-select{
+    border:1px solid var(--line); border-radius:8px; padding:5px 8px; font-size:12px;
+    background:#fff; cursor:pointer;
+  }
+  select.scope-select:disabled{ background:var(--mist-2); cursor:not-allowed; color:var(--ink-faint); }
+
+  .toggle{ position:relative; display:inline-block; width:38px; height:21px; }
+  .toggle input{ opacity:0; width:0; height:0; }
+  .toggle-slider{ position:absolute; cursor:pointer; inset:0; background:#D8DEE6; border-radius:999px; transition:.2s; }
+  .toggle-slider:before{ position:absolute; content:""; height:15px; width:15px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+  .toggle input:checked + .toggle-slider{ background:var(--teal); }
+  .toggle input:checked + .toggle-slider:before{ transform:translateX(17px); }
+  .toggle input:disabled + .toggle-slider{ opacity:.4; cursor:not-allowed; }
+
+  .btn-sm{ padding:5px 12px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; border:1px solid var(--line); background:#fff; }
+  .btn-sm:hover{ background:var(--mist-2); }
+  .btn-primary{ background:var(--navy); color:#fff; border:none; padding:6px 14px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-primary:hover{ background:var(--navy-2); }
+  .btn-primary:disabled{ background:var(--ink-faint); cursor:not-allowed; }
+
+  .toast{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; padding:11px 20px; border-radius:12px;
+    font-size:13px; font-weight:600; z-index:200; box-shadow:0 10px 28px rgba(0,0,0,0.28);
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item active" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <p class="text-ink font-semibold text-sm" id="adminGreeting">Welcome</p>
+        <p class="text-ink-faint text-xs">View and adjust what each role is allowed to do</p>
+      </div>
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-5xl mx-auto space-y-6">
+
+      <div class="info-banner">
+        <strong>How this works:</strong> permissions here can only be narrowed or revoked for Mentor and Assistant roles — you can't grant a role something beyond its platform default (that ceiling is set in code, not here, as a safety measure). Other roles are shown read-only for transparency.
+      </div>
+
+      <section class="panel p-6">
+        <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+          <div>
+            <h2 class="font-display text-lg text-ink">Role Permissions</h2>
+            <p class="text-ink-faint text-xs" id="editableNotice"></p>
+          </div>
+          <select id="roleSelect" class="border border-line rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30">
+            <option value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="mentor" selected>Mentor</option>
+            <option value="assistant">Assistant</option>
+            <option value="parent">Parent</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr><th>Module</th><th>Action</th><th>Allowed</th><th>Scope</th><th></th></tr>
+            </thead>
+            <tbody id="permsTableBody">
+              <tr><td colspan="5" class="text-ink-faint text-center py-6">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  const token = localStorage.getItem('mc_token');
+  const EDITABLE_ROLES = ['mentor', 'assistant'];
+  const SCOPES = ['none', 'own', 'assigned', 'org', 'all'];
+  let currentRole = 'mentor';
+  let currentRows = [];
+
+  if (window.lucide) lucide.createIcons();
+
+  document.getElementById('signOutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('mc_token');
+    localStorage.removeItem('mc_user');
+    window.location.href = 'index.html';
+  });
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = isError ? '#DC2626' : 'var(--navy)';
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function scopeOptionsHtml(selected) {
+    return SCOPES.map(s => `<option value="${s}" ${s === selected ? 'selected' : ''}>${s}</option>`).join('');
+  }
+
+  function renderRows(rows, editable) {
+    const body = document.getElementById('permsTableBody');
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5" class="text-ink-faint text-center py-6">No permission rows found for this role yet.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map((r, i) => {
+      const canEdit = editable && r.allowed;
+      return `
+        <tr>
+          <td class="font-mono text-xs text-ink-soft">${r.module}</td>
+          <td class="font-mono text-xs text-ink-soft">${r.action}</td>
+          <td>
+            <label class="toggle">
+              <input type="checkbox" data-idx="${i}" class="allowed-toggle" ${r.allowed ? 'checked' : ''} ${canEdit ? '' : 'disabled'}/>
+              <span class="toggle-slider"></span>
+            </label>
+          </td>
+          <td>
+            <select class="scope-select" data-idx="${i}" ${canEdit ? '' : 'disabled'}>
+              ${scopeOptionsHtml(r.scope)}
+            </select>
+          </td>
+          <td>
+            ${editable
+              ? (r.allowed
+                  ? `<button class="btn-primary" onclick="saveRow(${i})">Save</button>`
+                  : `<span class="chip chip-grey">Not grantable here</span>`)
+              : `<span class="chip chip-grey">View only</span>`}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadPermissions(role) {
+    currentRole = role;
+    const editable = EDITABLE_ROLES.includes(role);
+    document.getElementById('editableNotice').textContent = editable
+      ? 'You can narrow scope or revoke access below for this role.'
+      : "Read-only — permissions for this role aren't editable from this screen.";
+
+    try {
+      const res = await fetch(`${API_BASE}/permissions/${role}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) {
+        document.getElementById('permsTableBody').innerHTML =
+          `<tr><td colspan="5" class="text-red-600 text-center py-6">${data.message || 'Failed to load permissions.'}</td></tr>`;
+        return;
+      }
+      currentRows = data.permissions.sort((a, b) =>
+        a.module.localeCompare(b.module) || a.action.localeCompare(b.action)
+      );
+      renderRows(currentRows, editable);
+    } catch (err) {
+      console.error('Failed to load permissions', err);
+      document.getElementById('permsTableBody').innerHTML =
+        '<tr><td colspan="5" class="text-red-600 text-center py-6">Network error loading permissions.</td></tr>';
+    }
+  }
+
+  async function saveRow(idx) {
+    const row = currentRows[idx];
+    const allowedInput = document.querySelector(`.allowed-toggle[data-idx="${idx}"]`);
+    const scopeInput = document.querySelector(`.scope-select[data-idx="${idx}"]`);
+    const allowed = allowedInput.checked;
+    const scope = scopeInput.value;
+
+    try {
+      const res = await fetch(`${API_BASE}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ role: currentRole, module: row.module, action: row.action, allowed, scope }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Updated ${currentRole} · ${row.module} · ${row.action}`);
+        loadPermissions(currentRole);
+      } else {
+        showToast(data.message || 'Failed to update permission.', true);
+      }
+    } catch (err) {
+      showToast('Network error while saving.', true);
+    }
+  }
+
+  document.getElementById('roleSelect').addEventListener('change', (e) => {
+    loadPermissions(e.target.value);
+  });
+
+  if (!token) {
+    window.location.href = 'index.html';
+  } else {
+    const me = JSON.parse(localStorage.getItem('mc_user') || '{}');
+    document.getElementById('adminGreeting').textContent = `Welcome, ${me.name || 'Admin'}`;
+    document.getElementById('roleLabel').textContent = me.role === 'super_admin' ? 'Super Admin' : 'Admin';
+    loadPermissions('mentor');
+  }
+</script>
+
+</body>
+</html>

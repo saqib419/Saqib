@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy:        "#0A1424",
+          "navy-2":    "#0F2038",
+          "navy-3":    "#16304F",
+          teal:        "#0FA89A",
+          "teal-2":    "#33D9C8",
+          "teal-deep": "#0A6E64",
+          gold:        "#B9924F",
+          "gold-soft": "rgba(185,146,79,0.12)",
+          mist:        "#F5F7FA",
+          "mist-2":    "#EEF2F6",
+          ink:         "#0B1220",
+          "ink-soft":  "#56657B",
+          "ink-faint": "#8B97A8",
+          line:        "rgba(11,18,32,0.08)",
+        },
+        fontFamily: {
+          display: ["DM Serif Display", "serif"],
+          sans:    ["DM Sans", "sans-serif"],
+          mono:    ["JetBrains Mono", "monospace"],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:'DM Serif Display',serif;}
+  .font-mono{font-family:'JetBrains Mono',monospace;}
+  ::selection{background:rgba(15,168,154,0.18);}
+
+  .app-shell{display:flex;min-height:100dvh;}
+
+  .sidebar{
+    position:fixed;left:16px;top:16px;bottom:16px;
+    width:240px;border-radius:24px;
+    background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex;flex-direction:column;z-index:60;overflow-y:auto;
+  }
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+
+  .nav-item{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 16px;border-radius:14px;
+    color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;
+    cursor:pointer;transition:all .2s ease;margin:1px 12px;
+    text-decoration:none;position:relative;
+  }
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{
+    position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;
+    border-radius:20px;background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+    padding:14px 22px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-gold{background:var(--gold-soft);color:var(--gold);}
+  .chip-red{background:rgba(220,38,38,0.1);color:#DC2626;}
+  .chip-blue{background:rgba(59,130,246,0.1);color:#2563EB;}
+  .chip-grey{background:var(--mist-2);color:var(--ink-soft);}
+
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;}
+
+  .activity-dot{width:9px;height:9px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:4px;}
+  .activity-dot.denied{background:#DC2626;}
+
+  .session-card{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 16px;border-radius:14px;
+    border:1px solid var(--line);background:#fff;
+    transition:box-shadow .15s;
+  }
+  .session-card:hover{box-shadow:0 4px 12px rgba(11,18,32,0.07);}
+  .date-badge{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(135deg,var(--navy-2),var(--navy));color:#fff;
+    font-size:11px;font-weight:700;
+  }
+  .date-badge .day{font-size:18px;font-weight:800;line-height:1;}
+
+  .btn-join{
+    padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;
+    background:rgba(15,168,154,0.1);color:var(--teal-deep);border:1px solid rgba(15,168,154,0.2);
+    cursor:pointer;transition:all .15s;
+  }
+  .btn-join:hover{background:var(--teal);color:#fff;}
+
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+    background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;
+    font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .toast.show{opacity:1;}
+
+  .quick-action-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:9px 16px;border-radius:12px;font-size:13px;font-weight:600;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    transition:background .15s;
+  }
+  .quick-action-btn:hover{background:var(--navy-2);}
+  .quick-action-btn svg{width:16px;height:16px;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Super Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item active" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-5 py-4 border-t border-white/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-teal-2 font-bold text-sm" id="adminAvatarInitial">—</div>
+        <div class="min-w-0">
+          <p class="text-white text-sm font-semibold truncate" id="adminNameSidebar">—</p>
+          <p class="text-white/40 text-[11px] truncate" id="adminEmailSidebar">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden mr-1" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <i data-lucide="menu"></i>
+        </button>
+        <div>
+          <p class="text-ink font-semibold text-sm" id="adminGreeting">Welcome back</p>
+          <p class="text-ink-faint text-xs">MedClarivo Elite platform overview</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="quick-action-btn" onclick="showToast('Quick actions coming soon')">
+          <i data-lucide="zap"></i>Quick Action
+        </button>
+        <button onclick="showToast('Notifications coming soon')" class="relative p-2 rounded-xl hover:bg-mist transition-colors">
+          <i data-lucide="bell" class="w-5 h-5 text-ink-soft"></i>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-teal rounded-full"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-7xl mx-auto space-y-6">
+
+      <!-- ── Top stat cards ── -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Total Students</p>
+            <div class="w-8 h-8 rounded-xl bg-teal/10 flex items-center justify-center">
+              <i data-lucide="users" class="w-4 h-4 text-teal"></i>
+            </div>
+          </div>
+          <p class="font-display text-3xl text-ink" id="statStudents">—</p>
+          <p class="text-ink-faint text-xs mt-1">Registered learners</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Active Mentors</p>
+            <div class="w-8 h-8 rounded-xl bg-gold-soft flex items-center justify-center">
+              <i data-lucide="graduation-cap" class="w-4 h-4 text-gold"></i>
+            </div>
+          </div>
+          <p class="font-display text-3xl text-ink" id="statMentors">—</p>
+          <p class="text-ink-faint text-xs mt-1">Staff members</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Sessions This Month</p>
+            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+              <i data-lucide="video" class="w-4 h-4 text-blue-500"></i>
+            </div>
+          </div>
+          <p class="font-display text-3xl text-ink" id="statSessions">—</p>
+          <p class="text-ink-faint text-xs mt-1">Conducted so far</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Suspended</p>
+            <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
+              <i data-lucide="user-x" class="w-4 h-4 text-red-500"></i>
+            </div>
+          </div>
+          <p class="font-display text-3xl text-red-600" id="statSuspended">—</p>
+          <p class="text-ink-faint text-xs mt-1">Inactive accounts</p>
+        </div>
+      </div>
+
+      <!-- ── Charts row ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="panel p-6">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <h2 class="font-display text-lg text-ink">Student Enrollment</h2>
+              <p class="text-ink-faint text-xs mt-0.5">Cumulative students and new registrations, last 7 months</p>
+            </div>
+            <span class="chip chip-teal">Live data</span>
+          </div>
+          <div style="height:220px;position:relative;">
+            <canvas id="enrollmentChart"></canvas>
+          </div>
+        </div>
+        <div class="panel p-6">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <h2 class="font-display text-lg text-ink">Mentor Activity Index</h2>
+              <p class="text-ink-faint text-xs mt-0.5">Sessions and distinct students per mentor</p>
+            </div>
+            <span class="chip chip-blue">Live data</span>
+          </div>
+          <div style="height:220px;position:relative;">
+            <canvas id="mentorChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Bottom row ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="panel p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h2 class="font-display text-lg text-ink">Upcoming Sessions</h2>
+              <p class="text-ink-faint text-xs mt-0.5">Next mentor-student sessions</p>
+            </div>
+            <a href="admin-calendar.html" class="text-teal text-xs font-semibold flex items-center gap-1 hover:underline">
+              View Calendar <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+          </div>
+          <div class="space-y-3" id="upcomingSessions"></div>
+        </div>
+        <div class="panel p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h2 class="font-display text-lg text-ink">Real-time Activity</h2>
+              <p class="text-ink-faint text-xs mt-0.5">Latest audit log entries</p>
+            </div>
+            <span class="flex items-center gap-1.5 text-teal text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-teal animate-pulse"></span> Live
+            </span>
+          </div>
+          <div class="space-y-4" id="activityFeed"><p class="text-ink-faint text-sm text-center py-6">Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- ── Recent Users ── -->
+      <div class="panel p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="font-display text-lg text-ink">Recently Joined Users</h2>
+            <p class="text-ink-faint text-xs mt-0.5">Latest registrations on the platform</p>
+          </div>
+          <a href="admin-users.html" class="text-teal text-xs font-semibold flex items-center gap-1 hover:underline">
+            View All <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-line">
+                <th class="text-left py-2.5 px-3 text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Name</th>
+                <th class="text-left py-2.5 px-3 text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Email</th>
+                <th class="text-left py-2.5 px-3 text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Role</th>
+                <th class="text-left py-2.5 px-3 text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Joined</th>
+                <th class="text-left py-2.5 px-3 text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentUsersTable">
+              <tr><td colspan="5" class="py-8 text-center text-ink-faint text-sm">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+let allUsers = [];
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function getToken() {
+  return localStorage.getItem('mc_token') || localStorage.getItem('admin_token');
+}
+
+function authHeaders() {
+  return { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' };
+}
+
+function formatRole(role) {
+  const map = { super_admin:'Super Admin', admin:'Admin', mentor:'Mentor', assistant:'Assistant', student:'Student' };
+  return map[role] || role;
+}
+
+function roleChipClass(role) {
+  const map = { super_admin:'chip-gold', admin:'chip-teal', mentor:'chip-blue', assistant:'chip-grey', student:'chip-grey' };
+  return map[role] || 'chip-grey';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+async function loadDashboard() {
+  const token = getToken();
+  if (!token) { window.location.href = 'index.html'; return; }
+
+  try {
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const u = data.user;
+      const name = u.name || u.email || 'Admin';
+      const firstName = name.split(' ')[0];
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('adminGreeting').textContent = `${greet}, ${firstName}`;
+      document.getElementById('adminNameSidebar').textContent = name;
+      document.getElementById('adminEmailSidebar').textContent = u.email || '';
+      document.getElementById('adminAvatarInitial').textContent = firstName[0].toUpperCase();
+      document.getElementById('roleLabel').textContent = formatRole(u.role);
+    }
+  } catch(e) {}
+
+  try {
+    const res = await fetch(`${API}/admin/users`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const users = data.users || [];
+      allUsers = users;
+      const students  = users.filter(u => u.role === 'student');
+      const mentors   = users.filter(u => ['mentor','assistant','admin','super_admin'].includes(u.role));
+      const suspended = users.filter(u => u.status === 'suspended' || u.isActive === false);
+
+      document.getElementById('statStudents').textContent  = students.length;
+      document.getElementById('statMentors').textContent   = mentors.length;
+      document.getElementById('statSuspended').textContent = suspended.length;
+
+      const recent = [...users].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5);
+      const tbody = document.getElementById('recentUsersTable');
+      tbody.innerHTML = recent.length === 0
+        ? '<tr><td colspan="5" class="py-8 text-center text-ink-faint text-sm">No users yet</td></tr>'
+        : recent.map(u => `
+          <tr class="border-b border-line hover:bg-mist transition-colors">
+            <td class="py-3 px-3 font-medium text-ink text-sm">${u.name || '—'}</td>
+            <td class="py-3 px-3 text-ink-soft text-sm">${u.email}</td>
+            <td class="py-3 px-3"><span class="chip ${roleChipClass(u.role)}">${formatRole(u.role)}</span></td>
+            <td class="py-3 px-3 text-ink-soft text-sm">${formatDate(u.createdAt)}</td>
+            <td class="py-3 px-3"><span class="chip ${(u.status==='suspended'||u.isActive===false)?'chip-red':'chip-teal'}">${(u.status==='suspended'||u.isActive===false)?'Suspended':'Active'}</span></td>
+          </tr>`).join('');
+
+      buildEnrollmentChart(users);
+    }
+  } catch(e) { console.error(e); }
+
+  await buildMentorChart();
+  buildUpcomingSessions();
+  buildActivityFeed();
+}
+
+function buildEnrollmentChart(users) {
+  const now = new Date();
+  const months = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleString('en',{month:'short'}).toUpperCase(), year: d.getFullYear(), month: d.getMonth() });
+  }
+
+  const students = users.filter(u => u.role === 'student' && u.createdAt);
+  const newRegPerMonth = months.map(m =>
+    students.filter(s => {
+      const c = new Date(s.createdAt);
+      return c.getFullYear() === m.year && c.getMonth() === m.month;
+    }).length
+  );
+
+  // Cumulative students that existed by the end of each month
+  const cumulative = months.map(m => {
+    const cutoff = new Date(m.year, m.month + 1, 1);
+    return students.filter(s => new Date(s.createdAt) < cutoff).length;
+  });
+
+  const ctx = document.getElementById('enrollmentChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months.map(m => m.label),
+      datasets: [
+        { label:'Total Students', data: cumulative, borderColor:'#0FA89A', backgroundColor:'rgba(15,168,154,0.08)', fill:true, tension:0.4, pointBackgroundColor:'#0FA89A', pointRadius:4, borderWidth:2 },
+        { label:'New Registrations', data: newRegPerMonth, borderColor:'#B9924F', backgroundColor:'rgba(185,146,79,0.06)', fill:true, tension:0.4, pointBackgroundColor:'#B9924F', pointRadius:4, borderWidth:2 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'DM Sans', size:11 }, padding:16 } } }, scales:{ x:{ grid:{ display:false }, ticks:{ font:{ family:'DM Sans', size:11 } } }, y:{ beginAtZero:true, grid:{ color:'rgba(11,18,32,0.05)' }, ticks:{ font:{ family:'DM Sans', size:11 }, precision:0 } } } }
+  });
+}
+
+async function buildMentorChart() {
+  const mentors = allUsers.filter(u => u.role === 'mentor');
+  let names = [], sessionCounts = [], studentCounts = [];
+
+  try {
+    const res = await fetch(`${API}/admin/sessions`, { headers: authHeaders() });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const sessions = data.sessions || [];
+      const byMentor = {};
+      sessions.forEach(s => {
+        const mid = s.mentor?._id || s.mentor;
+        if (!mid) return;
+        if (!byMentor[mid]) byMentor[mid] = { name: s.mentor?.name || 'Unknown', sessionCount: 0, students: new Set() };
+        byMentor[mid].sessionCount++;
+        const stid = s.mentee?._id || s.mentee;
+        if (stid) byMentor[mid].students.add(stid.toString());
+      });
+
+      const rows = Object.values(byMentor).sort((a,b) => b.sessionCount - a.sessionCount).slice(0,7);
+      names = rows.map(r => r.name.split(' ')[0]);
+      sessionCounts = rows.map(r => r.sessionCount);
+      studentCounts = rows.map(r => r.students.size);
+    }
+  } catch(e) { console.error(e); }
+
+  if (!names.length) {
+    names = mentors.slice(0,7).map(m => (m.name||m.email).split(' ')[0]);
+    sessionCounts = names.map(() => 0);
+    studentCounts = names.map(() => 0);
+  }
+
+  const ctx = document.getElementById('mentorChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: names.length ? names : ['No mentors yet'],
+      datasets: [
+        { label:'Sessions', data: sessionCounts.length ? sessionCounts : [0], backgroundColor:'#0FA89A', borderRadius:8, barThickness:20 },
+        { label:'Students', data: studentCounts.length ? studentCounts : [0], backgroundColor:'#33D9C8', borderRadius:8, barThickness:20 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'DM Sans', size:11 }, padding:16 } } }, scales:{ x:{ grid:{ display:false }, ticks:{ font:{ family:'DM Sans', size:11 } } }, y:{ beginAtZero:true, grid:{ color:'rgba(11,18,32,0.05)' }, ticks:{ font:{ family:'DM Sans', size:11 }, precision:0 } } } }
+  });
+}
+
+async function buildUpcomingSessions() {
+  const container = document.getElementById('upcomingSessions');
+  const typeColors = { 'Academic':'chip-teal','Doubt Clearing':'chip-blue','Exam Prep':'chip-gold','Revision':'chip-grey' };
+  const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+  try {
+    const res = await fetch(`${API}/mentor/sessions/upcoming`, { headers: { Authorization: `Bearer ${getToken()}` } });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">Couldn\'t load sessions.</p>';
+      return;
+    }
+
+    const sessions = data.upcoming || [];
+    document.getElementById('statSessions').textContent = data.weeklySessionsCompleted ?? '—';
+
+    if (sessions.length === 0) {
+      container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">No upcoming sessions scheduled.</p>';
+      return;
+    }
+
+    container.innerHTML = sessions.map(s => {
+      const d = new Date(s.startTime);
+      const month = monthNames[d.getMonth()];
+      const day = String(d.getDate()).padStart(2, '0');
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const studentName = s.mentee?.name || 'Unknown student';
+      const mentorName  = s.mentor?.name || 'Unknown mentor';
+      const type = s.topic || s.type || 'Session';
+      const joinAttr = s.meetingLink
+        ? `onclick="window.open('${s.meetingLink}','_blank')"`
+        : `onclick="showToast('No meeting link has been added for this session yet.')" style="opacity:.5"`;
+
+      return `
+    <div class="session-card">
+      <div class="date-badge"><span class="text-[10px] opacity-60">${month}</span><span class="day">${day}</span></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-0.5">
+          <p class="font-semibold text-ink text-sm truncate">${studentName}</p>
+          <span class="chip ${typeColors[type]||'chip-grey'} text-[10px]">${type}</span>
+        </div>
+        <p class="text-ink-faint text-xs">Mentor: ${mentorName} · ${time}</p>
+      </div>
+      <button class="btn-join" ${joinAttr}>Join</button>
+    </div>`;
+    }).join('');
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">Couldn\'t load sessions.</p>';
+  }
+}
+
+function humanizeAction(action) {
+  const map = {
+    'user.create': 'created a user account',
+    'user.suspend': 'suspended a user account',
+    'user.reactivate': 'reactivated a user account',
+    'session.create': 'booked a session',
+    'session.update': 'updated a session',
+    'session.cancel': 'cancelled a session',
+    'session_note.save': 'saved session notes',
+    'evaluation.save': 'saved an evaluation',
+    'evaluation.publish': 'published an evaluation',
+  };
+  return map[action] || action.replace(/[._]/g, ' ');
+}
+
+function timeAgo(dateStr) {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min${mins===1?'':'s'} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs===1?'':'s'} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days===1?'':'s'} ago`;
+}
+
+async function buildActivityFeed() {
+  const container = document.getElementById('activityFeed');
+  try {
+    const res = await fetch(`${API}/audit-logs?page=1&limit=8`, { headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">Couldn\'t load activity.</p>';
+      return;
+    }
+    const items = data.items || [];
+    if (!items.length) {
+      container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">No recent activity.</p>';
+      return;
+    }
+    const userById = {};
+    allUsers.forEach(u => { userById[u._id] = u; });
+
+    container.innerHTML = items.map(log => {
+      const actor = userById[log.actorId];
+      const actorName = actor ? (actor.name || actor.email) : formatRole(log.actorRole);
+      const desc = humanizeAction(log.action);
+      return `
+    <div class="flex gap-3">
+      <div class="activity-dot${log.wasDenied ? ' denied' : ''}"></div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-ink text-sm leading-snug"><span class="font-semibold">${actorName}</span> <span class="text-ink-soft">${desc}</span></p>
+          <span class="text-ink-faint text-[11px] whitespace-nowrap flex-shrink-0">${timeAgo(log.createdAt)}</span>
+        </div>
+        <p class="text-ink-faint text-xs mt-0.5">${log.wasDenied ? 'Permission denied' : formatRole(log.actorRole)}</p>
+      </div>
+    </div>`;
+    }).join('');
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">Couldn\'t load activity.</p>';
+  }
+}
+
+document.getElementById('signOutLink').addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('mc_token');
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('mc_user');
+  window.location.href = 'index.html';
+});
+
+window.addEventListener('load', () => { lucide.createIcons(); loadDashboard(); });
+</script>
+</body>
+</html>

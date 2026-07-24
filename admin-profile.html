@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { navy:"#0A1424", "navy-2":"#0F2038", teal:"#0FA89A", "teal-2":"#33D9C8", mist:"#F5F7FA", "mist-2":"#EEF2F6", ink:"#0B1220", "ink-soft":"#56657B", "ink-faint":"#8B97A8", line:"rgba(11,18,32,0.08)" },
+    fontFamily: { display:["DM Serif Display","serif"], sans:["DM Sans","sans-serif"] },
+  }}}
+</script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --teal:#0FA89A; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; }
+  *{box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);min-height:100dvh;}
+  .font-display{font-family:'DM Serif Display',serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55);display:flex;flex-direction:column;z-index:60;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.7);padding:14px 22px;}
+  .btn-primary{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  input[type="text"], input[type="email"], input[type="password"]{border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13.5px;background:#fff;outline:none;width:100%;}
+  input:focus{border-color:var(--teal);}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+  .avatar-preview{width:64px;height:64px;border-radius:16px;object-fit:cover;background:var(--mist-2);}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">—</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item active" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <p class="text-ink font-semibold text-sm">Identity Settings</p>
+      <p class="text-ink-faint text-xs">Manage your account details and password</p>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-3xl mx-auto space-y-6">
+
+      <div class="panel p-6">
+        <div class="flex items-center gap-4 mb-6">
+          <img id="avatarPreview" class="avatar-preview" src="" alt="">
+          <div>
+            <p class="font-display text-xl text-ink" id="displayName">—</p>
+            <p class="text-ink-faint text-xs" id="displayRole">—</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">Name</label>
+            <input type="text" id="nameInput">
+          </div>
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">Email</label>
+            <input type="email" id="emailInput" disabled class="opacity-60 cursor-not-allowed">
+            <p class="text-ink-faint text-[11px] mt-1">Email cannot be changed here.</p>
+          </div>
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">Avatar Image URL</label>
+            <input type="text" id="avatarInput" placeholder="https://...">
+          </div>
+        </div>
+
+        <button class="btn-primary mt-5" onclick="saveProfile()">Save Profile Details</button>
+      </div>
+
+      <div class="panel p-6">
+        <h3 class="font-display text-lg text-ink mb-1">Change Password</h3>
+        <p class="text-ink-faint text-xs mb-5">Changing your password will sign you out of other active sessions.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">Current Password</label>
+            <input type="password" id="currentPassword">
+          </div>
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">New Password</label>
+            <input type="password" id="newPassword">
+          </div>
+          <div>
+            <label class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold block mb-1.5">Confirm New Password</label>
+            <input type="password" id="confirmPassword">
+          </div>
+        </div>
+
+        <button class="btn-primary mt-5" onclick="changePassword()">Update Password</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+function getToken() { return localStorage.getItem('mc_token') || localStorage.getItem('admin_token'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function formatRole(role) {
+  const map = { super_admin: 'Super Admin', admin: 'Admin', mentor: 'Mentor', assistant: 'Assistant', student: 'Student', parent: 'Parent' };
+  return map[role] || role;
+}
+function fallbackAvatar(name) {
+  const initial = (name || '?')[0].toUpperCase();
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="16" fill="%230FA89A"/><text x="32" y="42" font-size="24" fill="white" text-anchor="middle" font-family="sans-serif">${initial}</text></svg>`)}`;
+}
+
+let currentUser = null;
+
+async function loadProfile() {
+  const token = getToken();
+  if (!token) { window.location.href = 'index.html'; return; }
+  try {
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      currentUser = data.user;
+      document.getElementById('roleLabel').textContent = formatRole(currentUser.role);
+      document.getElementById('displayName').textContent = currentUser.name || currentUser.email;
+      document.getElementById('displayRole').textContent = formatRole(currentUser.role);
+      document.getElementById('nameInput').value = currentUser.name || '';
+      document.getElementById('emailInput').value = currentUser.email || '';
+      document.getElementById('avatarInput').value = currentUser.avatar || '';
+      document.getElementById('avatarPreview').src = currentUser.avatar || fallbackAvatar(currentUser.name);
+      document.getElementById('avatarPreview').onerror = function() { this.src = fallbackAvatar(currentUser.name); };
+    }
+  } catch (e) { showToast('Failed to load profile.'); }
+}
+
+async function saveProfile() {
+  const token = getToken();
+  const name = document.getElementById('nameInput').value.trim();
+  const avatar = document.getElementById('avatarInput').value.trim();
+  try {
+    const res = await fetch(`${API}/auth/profile`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, avatar }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('Profile updated.');
+      loadProfile();
+    } else {
+      showToast(data.message || 'Failed to update profile.');
+    }
+  } catch (e) { showToast('Network error.'); }
+}
+
+async function changePassword() {
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+
+  if (!currentPassword || !newPassword || !confirmPassword) { showToast('All password fields are required.'); return; }
+  if (newPassword !== confirmPassword) { showToast('New passwords do not match.'); return; }
+  if (newPassword.length < 8) { showToast('New password must be at least 8 characters.'); return; }
+
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/auth/change-password`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('Password updated. Redirecting to login…');
+      localStorage.removeItem('mc_token'); localStorage.removeItem('admin_token'); localStorage.removeItem('mc_user');
+      setTimeout(() => window.location.href = 'index.html', 1500);
+    } else {
+      showToast(data.message || 'Failed to update password.');
+    }
+  } catch (e) { showToast('Network error.'); }
+}
+
+document.getElementById('signOutLink').addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('mc_token'); localStorage.removeItem('admin_token'); localStorage.removeItem('mc_user');
+  window.location.href = 'index.html';
+});
+
+window.addEventListener('load', () => { lucide.createIcons(); loadProfile(); });
+</script>
+</body>
+</html>

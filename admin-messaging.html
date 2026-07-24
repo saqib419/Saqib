@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Messaging</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+  tailwind.config={darkMode:"class",theme:{extend:{colors:{navy:"#0A1424","navy-2":"#0F2038","navy-3":"#16304F",teal:"#0FA89A","teal-2":"#33D9C8","teal-deep":"#0A6E64",gold:"#B9924F","gold-soft":"rgba(185,146,79,0.12)",mist:"#F5F7FA","mist-2":"#EEF2F6",ink:"#0B1220","ink-soft":"#56657B","ink-faint":"#8B97A8",line:"rgba(11,18,32,0.08)"},fontFamily:{display:["DM Serif Display","serif"],sans:["DM Sans","sans-serif"]}}}}
+</script>
+<style>
+  :root{--navy:#0A1424;--navy-2:#0F2038;--navy-3:#16304F;--teal:#0FA89A;--teal-2:#33D9C8;--teal-deep:#0A6E64;--gold:#B9924F;--mist:#F5F7FA;--ink:#0B1220;--ink-soft:#56657B;}
+  *{box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{font-family:"DM Sans",sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:"DM Serif Display",serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-grey{background:#EEF2F6;color:#56657B;}
+  .btn-primary{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-secondary{background:#EEF2F6;color:var(--ink);border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .btn-secondary:hover{background:#E2E8F0;}
+  .btn-teal{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-teal:hover{opacity:0.9;}
+  input,select,textarea{border:1px solid rgba(11,18,32,0.1);border-radius:12px;padding:10px 14px;font-size:13.5px;font-family:"DM Sans",sans-serif;background:#fff;outline:none;transition:border-color .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+  textarea{resize:vertical;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,36,0.5);backdrop-filter:blur(4px);z-index:150;display:none;align-items:center;justify-content:center;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box{background:#fff;border-radius:20px;padding:28px;width:480px;max-width:92vw;box-shadow:0 30px 60px -20px rgba(11,18,32,0.35);max-height:90vh;overflow-y:auto;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+
+  .msg-shell{display:grid;grid-template-columns:340px 1fr;gap:20px;height:calc(100dvh - 190px);min-height:480px;}
+  @media(max-width:900px){.msg-shell{grid-template-columns:1fr;height:auto;}}
+  .conv-list{overflow-y:auto;}
+  .conv-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;cursor:pointer;transition:background .12s;border:1.5px solid transparent;}
+  .conv-row:hover{background:var(--mist);}
+  .conv-row.active{background:rgba(15,168,154,0.06);border-color:rgba(15,168,154,0.25);}
+  .avatar{width:36px;height:36px;border-radius:10px;background:rgba(15,168,154,0.12);color:var(--teal-deep);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+  .thread-scroll{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;}
+  .bubble{max-width:70%;padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.5;}
+  .bubble.mine{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:4px;}
+  .bubble.theirs{align-self:flex-start;background:var(--mist);color:var(--ink);border-bottom-left-radius:4px;}
+  .bubble-time{font-size:10px;opacity:.6;margin-top:4px;display:block;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--ink-faint);gap:10px;text-align:center;padding:40px;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Super Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item active" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-5 py-4 border-t border-white/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-teal-2 font-bold text-sm" id="adminAvatarInitial">—</div>
+        <div class="min-w-0">
+          <p class="text-white text-sm font-semibold truncate" id="adminNameSidebar">—</p>
+          <p class="text-white/40 text-[11px] truncate" id="adminEmailSidebar">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden mr-1" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu"></i></button>
+        <div>
+          <p class="text-ink font-semibold text-sm">Messaging</p>
+          <p class="text-ink-faint text-xs">Platform-wide conversation oversight, plus direct messaging to any user</p>
+        </div>
+      </div>
+      <button class="btn-teal" onclick="openNewMessageModal()"><i data-lucide="square-pen" class="w-4 h-4"></i>New Message</button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-7xl mx-auto">
+      <div class="msg-shell">
+
+        <!-- Conversation list -->
+        <div class="panel p-3 conv-list">
+          <div class="px-2 py-1 mb-1 flex items-center justify-between">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">All Conversations</p>
+            <button onclick="loadConversations()" class="p-1 rounded-lg hover:bg-mist" title="Refresh"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-ink-faint"></i></button>
+          </div>
+          <div id="convList"><p class="text-ink-faint text-xs text-center py-8">Loading…</p></div>
+        </div>
+
+        <!-- Thread panel -->
+        <div class="panel flex flex-col overflow-hidden">
+          <div id="threadHeader" class="px-5 py-4 border-b border-line flex items-center justify-between" style="display:none">
+            <div class="flex items-center gap-3">
+              <div class="avatar" id="threadAvatarA">—</div>
+              <div>
+                <p class="font-semibold text-ink text-sm" id="threadTitle">—</p>
+                <p class="text-ink-faint text-xs" id="threadSubtitle">—</p>
+              </div>
+            </div>
+            <span class="chip chip-grey" id="threadModeChip">Oversight</span>
+          </div>
+          <div id="threadScroll" class="thread-scroll">
+            <div class="empty-state">
+              <i data-lucide="message-circle" class="w-10 h-10"></i>
+              <p class="text-sm">Select a conversation on the left, or start a new one.</p>
+            </div>
+          </div>
+          <div id="composerBar" class="p-4 border-t border-line flex gap-2" style="display:none">
+            <input type="text" id="composerInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendComposerMessage()">
+            <button class="btn-teal" onclick="sendComposerMessage()"><i data-lucide="send" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Message Modal -->
+<div class="modal-backdrop" id="newMsgModal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display text-lg text-ink">New Message</h3>
+      <button onclick="closeNewMessageModal()" class="p-1 rounded-lg hover:bg-mist"><i data-lucide="x" class="w-5 h-5 text-ink-soft"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Recipient</label>
+        <select id="newMsgRecipient"><option value="">Loading users…</option></select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Message</label>
+        <textarea id="newMsgContent" rows="4" placeholder="Type your message…"></textarea>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button class="btn-teal flex-1" onclick="startNewConversation()">Send</button>
+        <button class="btn-secondary" onclick="closeNewMessageModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const API='https://med-clarivo.onrender.com/api';
+function getToken(){return localStorage.getItem('mc_token')||localStorage.getItem('admin_token');}
+function authHeaders(){return {Authorization:`Bearer ${getToken()}`,'Content-Type':'application/json'};}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000);}
+
+let currentUserId=null;
+let conversations=[];
+let directory=[];
+let activeThread=null; // {mode:'oversight'|'dm', ...}
+
+async function loadAdminUser(){
+  const token=getToken();if(!token)return;
+  try{
+    const r=await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      const u=d.user,n=u.name||u.email||'Admin';
+      currentUserId=u._id||u.id;
+      document.getElementById('adminNameSidebar').textContent=n;
+      document.getElementById('adminEmailSidebar').textContent=u.email||'';
+      document.getElementById('adminAvatarInitial').textContent=n[0].toUpperCase();
+      const roles={super_admin:'Super Admin',admin:'Admin',mentor:'Mentor'};
+      document.getElementById('roleLabel').textContent=roles[u.role]||u.role;
+    }
+  }catch(e){}
+}
+
+async function loadConversations(){
+  try{
+    const r=await fetch(`${API}/admin/messages/conversations`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      conversations=d.conversations;
+      renderConversations();
+    } else {
+      document.getElementById('convList').innerHTML=`<p class="text-ink-faint text-xs text-center py-8">${d.message||'Could not load conversations'}</p>`;
+    }
+  }catch(e){
+    document.getElementById('convList').innerHTML='<p class="text-ink-faint text-xs text-center py-8">Network error</p>';
+  }
+}
+
+function renderConversations(){
+  const el=document.getElementById('convList');
+  if(!conversations.length){el.innerHTML='<p class="text-ink-faint text-xs text-center py-8">No conversations yet on the platform</p>';return;}
+  el.innerHTML=conversations.map((c,i)=>{
+    const initials=(c.userA.name||'?')[0].toUpperCase();
+    const preview=(c.lastMessage||'').slice(0,42)+((c.lastMessage||'').length>42?'…':'');
+    return `<div class="conv-row" onclick="openOversightThread(${i})">
+      <div class="avatar">${initials}</div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-semibold text-ink truncate">${c.userA.name} <span class="text-ink-faint font-normal">↔</span> ${c.userB.name}</p>
+        <p class="text-ink-faint text-xs truncate">${preview||'No messages'}</p>
+      </div>
+      ${c.unreadCount>0?`<span class="chip chip-teal">${c.unreadCount}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function openOversightThread(i){
+  const c=conversations[i];
+
+  // If the logged-in admin is actually one side of this conversation
+  // (e.g. Owais messaging Dr. Mehta), this isn't oversight of someone
+  // else's chat -- it's the admin's own conversation. Treat it as a
+  // normal, editable DM instead of read-only oversight.
+  const isParticipantA = c.userA._id === currentUserId;
+  const isParticipantB = c.userB._id === currentUserId;
+  if (isParticipantA || isParticipantB) {
+    const other = isParticipantA ? c.userB : c.userA;
+    document.querySelectorAll('.conv-row').forEach((el,idx)=>el.classList.toggle('active',idx===i));
+    return openDmThread(other._id, other.name);
+  }
+
+  activeThread={mode:'oversight',userA:c.userA,userB:c.userB};
+  document.getElementById('threadHeader').style.display='flex';
+  document.getElementById('threadAvatarA').textContent=(c.userA.name||'?')[0].toUpperCase();
+  document.getElementById('threadTitle').textContent=`${c.userA.name} ↔ ${c.userB.name}`;
+  document.getElementById('threadSubtitle').textContent=`${c.userA.role} · ${c.userB.role} · ${timeAgo(c.userA.lastLogin)} / ${timeAgo(c.userB.lastLogin)}`;
+  document.getElementById('threadModeChip').textContent='Oversight — read only';
+  document.getElementById('threadModeChip').className='chip chip-grey';
+  document.getElementById('composerBar').style.display='none';
+  document.querySelectorAll('.conv-row').forEach((el,idx)=>el.classList.toggle('active',idx===i));
+
+  const scroll=document.getElementById('threadScroll');
+  scroll.innerHTML='<div class="empty-state"><p class="text-sm">Loading…</p></div>';
+  try{
+    const r=await fetch(`${API}/admin/messages/thread/${c.userA._id}/${c.userB._id}`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      renderThread(d.messages, c.userA._id);
+    } else {
+      scroll.innerHTML=`<div class="empty-state"><p class="text-sm">${d.message||'Could not load thread'}</p></div>`;
+    }
+  }catch(e){
+    scroll.innerHTML='<div class="empty-state"><p class="text-sm">Network error</p></div>';
+  }
+}
+
+function renderThread(messages, leftUserId){
+  const scroll=document.getElementById('threadScroll');
+  if(!messages.length){scroll.innerHTML='<div class="empty-state"><p class="text-sm">No messages yet</p></div>';return;}
+  scroll.innerHTML=messages.map(m=>{
+    const mine = activeThread.mode==='dm' ? m.sender===currentUserId : m.sender===leftUserId;
+    const time=new Date(m.createdAt).toLocaleString('en',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+    return `<div class="bubble ${mine?'mine':'theirs'}">${escapeHtml(m.content)}<span class="bubble-time">${time}</span></div>`;
+  }).join('');
+  scroll.scrollTop=scroll.scrollHeight;
+}
+
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function timeAgo(dateStr){
+  if(!dateStr) return 'never logged in';
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs/60000);
+  if (mins < 2) return 'online just now';
+  if (mins < 60) return `last seen ${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return `last seen ${hrs}h ago`;
+  const days = Math.floor(hrs/24);
+  if (days < 30) return `last seen ${days}d ago`;
+  return `last seen ${new Date(dateStr).toLocaleDateString()}`;
+}
+
+async function loadDirectory(){
+  try{
+    const r=await fetch(`${API}/admin/messages/directory`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      directory=d.users;
+      const sel=document.getElementById('newMsgRecipient');
+      sel.innerHTML=directory.map(u=>`<option value="${u._id}">${u.name||u.email} (${u.role})</option>`).join('');
+    }
+  }catch(e){}
+}
+
+function openNewMessageModal(){
+  document.getElementById('newMsgModal').classList.add('show');
+  if(!directory.length)loadDirectory();
+}
+function closeNewMessageModal(){document.getElementById('newMsgModal').classList.remove('show');document.getElementById('newMsgContent').value='';}
+
+async function startNewConversation(){
+  const recipientId=document.getElementById('newMsgRecipient').value;
+  const content=document.getElementById('newMsgContent').value.trim();
+  if(!recipientId||!content){showToast('Pick a recipient and write a message');return;}
+  try{
+    const r=await fetch(`${API}/admin/messages`,{method:'POST',headers:authHeaders(),body:JSON.stringify({recipientId,content})});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      closeNewMessageModal();
+      showToast('✅ Message sent');
+      const recipient=directory.find(u=>u._id===recipientId);
+      openDmThread(recipientId, recipient?recipient.name:'User');
+      loadConversations();
+    } else {
+      showToast(d.message||'Could not send message');
+    }
+  }catch(e){showToast('Network error sending message');}
+}
+
+async function openDmThread(userId, userName){
+  activeThread={mode:'dm',otherUserId:userId,otherUserName:userName};
+  document.getElementById('threadHeader').style.display='flex';
+  document.getElementById('threadAvatarA').textContent=(userName||'?')[0].toUpperCase();
+  document.getElementById('threadTitle').textContent=userName;
+  document.getElementById('threadSubtitle').textContent='Direct message';
+  document.getElementById('threadModeChip').textContent='You are messaging';
+  document.getElementById('threadModeChip').className='chip chip-teal';
+  document.getElementById('composerBar').style.display='flex';
+  document.querySelectorAll('.conv-row').forEach(el=>el.classList.remove('active'));
+
+  const scroll=document.getElementById('threadScroll');
+  scroll.innerHTML='<div class="empty-state"><p class="text-sm">Loading…</p></div>';
+  try{
+    const r=await fetch(`${API}/admin/messages/with/${userId}`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      renderThread(d.messages, userId);
+      if(d.otherUser){
+        document.getElementById('threadSubtitle').textContent=`Direct message · ${timeAgo(d.otherUser.lastLogin)}`;
+      }
+    } else {
+      scroll.innerHTML=`<div class="empty-state"><p class="text-sm">${d.message||'Could not load thread'}</p></div>`;
+    }
+  }catch(e){
+    scroll.innerHTML='<div class="empty-state"><p class="text-sm">Network error</p></div>';
+  }
+}
+
+async function sendComposerMessage(){
+  if(!activeThread||activeThread.mode!=='dm'){showToast('Open a direct message thread first');return;}
+  const input=document.getElementById('composerInput');
+  const content=input.value.trim();
+  if(!content)return;
+  try{
+    const r=await fetch(`${API}/admin/messages`,{method:'POST',headers:authHeaders(),body:JSON.stringify({recipientId:activeThread.otherUserId,content})});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      input.value='';
+      openDmThread(activeThread.otherUserId, activeThread.otherUserName);
+      loadConversations();
+    } else {
+      showToast(d.message||'Could not send message');
+    }
+  }catch(e){showToast('Network error sending message');}
+}
+
+document.getElementById('signOutLink').addEventListener('click',e=>{
+  e.preventDefault();
+  ['mc_token','admin_token','mc_user'].forEach(k=>localStorage.removeItem(k));
+  window.location.href='index.html';
+});
+window.addEventListener('load',()=>{lucide.createIcons();loadAdminUser();loadConversations();loadDirectory();});
+</script>
+</body></html>

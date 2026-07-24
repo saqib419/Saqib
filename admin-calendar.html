@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Calendar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+  tailwind.config={darkMode:"class",theme:{extend:{colors:{navy:"#0A1424","navy-2":"#0F2038","navy-3":"#16304F",teal:"#0FA89A","teal-2":"#33D9C8","teal-deep":"#0A6E64",gold:"#B9924F","gold-soft":"rgba(185,146,79,0.12)",mist:"#F5F7FA","mist-2":"#EEF2F6",ink:"#0B1220","ink-soft":"#56657B","ink-faint":"#8B97A8",line:"rgba(11,18,32,0.08)"},fontFamily:{display:["DM Serif Display","serif"],sans:["DM Sans","sans-serif"]}}}}
+</script>
+<style>
+  :root{--navy:#0A1424;--navy-2:#0F2038;--navy-3:#16304F;--teal:#0FA89A;--teal-2:#33D9C8;--teal-deep:#0A6E64;--gold:#B9924F;--mist:#F5F7FA;--ink:#0B1220;--ink-soft:#56657B;}
+  *{box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{font-family:"DM Sans",sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:"DM Serif Display",serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-gold{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .chip-red{background:rgba(220,38,38,0.1);color:#DC2626;}
+  .chip-blue{background:rgba(59,130,246,0.1);color:#2563EB;}
+  .chip-purple{background:rgba(124,58,237,0.1);color:#7C3AED;}
+  .chip-grey{background:#EEF2F6;color:#56657B;}
+  .chip-green{background:rgba(22,163,74,0.1);color:#16A34A;}
+  .btn-primary{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-secondary{background:#EEF2F6;color:var(--ink);border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .btn-secondary:hover{background:#E2E8F0;}
+  .btn-teal{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-teal:hover{opacity:0.9;}
+  input,select,textarea{border:1px solid rgba(11,18,32,0.1);border-radius:12px;padding:10px 14px;font-size:13.5px;font-family:"DM Sans",sans-serif;background:#fff;outline:none;transition:border-color .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+  textarea{resize:vertical;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,36,0.5);backdrop-filter:blur(4px);z-index:150;display:none;align-items:center;justify-content:center;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box{background:#fff;border-radius:20px;padding:28px;width:480px;max-width:92vw;box-shadow:0 30px 60px -20px rgba(11,18,32,0.35);max-height:90vh;overflow-y:auto;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:rgba(11,18,32,0.06);border-radius:12px;overflow:hidden;}
+  .cal-header{background:#F5F7FA;padding:10px 0;text-align:center;font-size:11px;font-weight:700;color:#8B97A8;text-transform:uppercase;letter-spacing:.05em;}
+  .cal-cell{background:#fff;min-height:110px;padding:8px;position:relative;transition:background .12s;}
+  .cal-cell:hover{background:#F9FAFB;}
+  .cal-cell.today{background:rgba(15,168,154,0.04);}
+  .cal-cell.today .cal-day{background:var(--teal);color:#fff;border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
+  .cal-cell.other-month .cal-day{color:#C5CDD8;}
+  .cal-day{font-size:13px;font-weight:600;color:var(--ink);width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
+  .cal-event{font-size:11px;font-weight:600;padding:3px 7px;border-radius:6px;margin-top:4px;truncate;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-event.academic{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .cal-event.behavioral{background:rgba(59,130,246,0.1);color:#1D4ED8;}
+  .cal-event.doubt{background:rgba(124,58,237,0.1);color:#6D28D9;}
+  .cal-event.exam{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .filter-btn{padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .15s;}
+  .filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .filter-btn:not(.active){background:#fff;color:var(--ink-soft);border-color:rgba(11,18,32,0.1);}
+  .filter-btn:not(.active):hover{border-color:var(--teal);color:var(--teal-deep);}
+
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:rgba(11,18,32,0.06);border-radius:12px;overflow:hidden;}
+  .week-col{background:#fff;min-height:320px;display:flex;flex-direction:column;}
+  .week-col-header{background:#F5F7FA;padding:10px 8px;text-align:center;border-bottom:1px solid rgba(11,18,32,0.06);}
+  .week-col-header .wd{font-size:11px;font-weight:700;color:#8B97A8;text-transform:uppercase;letter-spacing:.05em;}
+  .week-col-header .dn{font-size:16px;font-weight:700;color:var(--ink);margin-top:2px;}
+  .week-col.today .week-col-header{background:rgba(15,168,154,0.08);}
+  .week-col.today .dn{color:var(--teal-deep);}
+  .week-col-body{flex:1;padding:8px;display:flex;flex-direction:column;gap:6px;}
+  .week-event{border-radius:8px;padding:6px 8px;cursor:pointer;font-size:11px;line-height:1.35;}
+  .week-event .we-time{font-weight:700;display:block;}
+  .week-event .we-student{font-weight:600;}
+  .week-event.academic{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .week-event.behavioral{background:rgba(59,130,246,0.1);color:#1D4ED8;}
+  .week-event.doubt{background:rgba(124,58,237,0.1);color:#6D28D9;}
+  .week-event.exam{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .week-empty{color:#C5CDD8;font-size:11px;text-align:center;padding:12px 0;}
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Super Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item active" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item " href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item " href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-5 py-4 border-t border-white/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-teal-2 font-bold text-sm" id="adminAvatarInitial">—</div>
+        <div class="min-w-0">
+          <p class="text-white text-sm font-semibold truncate" id="adminNameSidebar">—</p>
+          <p class="text-white/40 text-[11px] truncate" id="adminEmailSidebar">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden mr-1" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu"></i></button>
+        <div>
+          <p class="text-ink font-semibold text-sm">Academic Schedules</p>
+          <p class="text-ink-faint text-xs">Organize class slots, sync sessions, and review upcoming transcripts</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-secondary flex items-center gap-2" onclick="changeView('week')" id="btnWeek"><i data-lucide="layout-list" class="w-4 h-4"></i>Weekly</button>
+        <button class="btn-primary flex items-center gap-2" onclick="changeView('month')" id="btnMonth"><i data-lucide="calendar-days" class="w-4 h-4"></i>Monthly</button>
+        <button class="btn-teal" onclick="openBookModal()"><i data-lucide="plus" class="w-4 h-4"></i>Book Slot</button>
+      </div>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-7xl mx-auto space-y-5">
+
+      <!-- Controls -->
+      <div class="panel p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="prevPeriod()" class="p-2 rounded-xl hover:bg-mist transition-colors border border-line"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+          <h2 class="font-display text-xl text-ink min-w-[140px] text-center" id="calTitle">July 2026</h2>
+          <button onclick="nextPeriod()" class="p-2 rounded-xl hover:bg-mist transition-colors border border-line"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-ink-faint text-xs font-semibold uppercase tracking-wider mr-1">Filter:</span>
+          <button class="filter-btn active" data-filter="all" onclick="setFilter(this,'all')">All</button>
+          <button class="filter-btn" data-filter="academic" onclick="setFilter(this,'academic')">Academic</button>
+          <button class="filter-btn" data-filter="behavioral" onclick="setFilter(this,'behavioral')">Behavioral</button>
+          <button class="filter-btn" data-filter="doubt" onclick="setFilter(this,'doubt')">Doubt Clearing</button>
+          <button class="filter-btn" data-filter="exam" onclick="setFilter(this,'exam')">Exam Prep</button>
+        </div>
+      </div>
+
+      <!-- Monthly Calendar -->
+      <div class="panel p-5" id="monthPanel">
+        <div class="cal-grid" id="calGrid">
+          <div class="cal-header">Mon</div>
+          <div class="cal-header">Tue</div>
+          <div class="cal-header">Wed</div>
+          <div class="cal-header">Thu</div>
+          <div class="cal-header">Fri</div>
+          <div class="cal-header">Sat</div>
+          <div class="cal-header">Sun</div>
+        </div>
+      </div>
+
+      <!-- Weekly Calendar -->
+      <div class="panel p-5" id="weekPanel" style="display:none">
+        <div class="week-grid" id="weekGrid"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Book Slot Modal -->
+<div class="modal-backdrop" id="bookModal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display text-lg text-ink">Book a Session Slot</h3>
+      <button onclick="closeBookModal()" class="p-1 rounded-lg hover:bg-mist"><i data-lucide="x" class="w-5 h-5 text-ink-soft"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div><label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Student</label><select id="bookStudent"><option value="">Loading students…</option></select></div>
+      <div><label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Mentor</label><select id="bookMentor"><option value="">Loading mentors…</option></select></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Date</label><input type="date" id="bookDate"></div>
+        <div><label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Time</label><input type="time" id="bookTime"></div>
+      </div>
+      <div><label class="block text-xs font-semibold text-ink-soft mb-1.5 uppercase tracking-wider">Session Type</label>
+        <select id="bookType">
+          <option value="academic">Academic</option>
+          <option value="behavioral">Behavioral</option>
+          <option value="doubt">Doubt Clearing</option>
+          <option value="exam">Exam Prep</option>
+        </select>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button class="btn-teal flex-1" onclick="saveSlot()">Book Slot</button>
+        <button class="btn-secondary" onclick="closeBookModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+let viewMode = 'month'; // 'month' | 'week'
+let currentDate = new Date(); // anchor date — day-of-month used for month view, day-of-week used to derive week start
+let activeFilter = 'all';
+let sessions = [];
+let studentsCache = [];
+let mentorsCache = [];
+
+const API='https://med-clarivo.onrender.com/api';
+function getToken(){return localStorage.getItem('mc_token')||localStorage.getItem('admin_token');}
+function authHeaders(){return {Authorization:`Bearer ${getToken()}`,'Content-Type':'application/json'};}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000);}
+
+function getWeekStart(d){
+  const copy=new Date(d);
+  const day=(copy.getDay()+6)%7; // Mon=0
+  copy.setDate(copy.getDate()-day);
+  copy.setHours(0,0,0,0);
+  return copy;
+}
+
+async function loadSessions(){
+  let url;
+  if(viewMode==='week'){
+    const from=getWeekStart(currentDate);
+    const to=new Date(from); to.setDate(to.getDate()+7);
+    url=`${API}/admin/sessions?from=${from.toISOString()}&to=${to.toISOString()}`;
+  } else {
+    const year=currentDate.getFullYear(), month=String(currentDate.getMonth()+1).padStart(2,'0');
+    url=`${API}/admin/sessions?month=${year}-${month}`;
+  }
+  try{
+    const r=await fetch(url,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      sessions=d.sessions.map(s=>({
+        id:s._id,
+        date:new Date(s.startTime).toISOString().slice(0,10),
+        time:new Date(s.startTime).toLocaleTimeString('en',{hour:'numeric',minute:'2-digit'}),
+        rawStart:s.startTime,
+        student:s.mentee?.name||'Unknown',
+        mentor:s.mentor?.name||'Unknown',
+        type:s.category||'academic',
+        status:s.status,
+      }));
+    } else {
+      showToast(d.message||'Could not load sessions');
+      sessions=[];
+    }
+  }catch(e){
+    showToast('Network error loading sessions');
+    sessions=[];
+  }
+  renderCalendar();
+}
+
+async function loadPeopleForBooking(){
+  try{
+    const r=await fetch(`${API}/admin/users`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      studentsCache=d.users.filter(u=>u.role==='student');
+      mentorsCache=d.users.filter(u=>u.role==='mentor');
+    }
+  }catch(e){}
+  const studentSel=document.getElementById('bookStudent');
+  const mentorSel=document.getElementById('bookMentor');
+  studentSel.innerHTML=studentsCache.length
+    ? studentsCache.map(s=>`<option value="${s._id}">${s.name||s.email}</option>`).join('')
+    : '<option value="">No students found</option>';
+  mentorSel.innerHTML=mentorsCache.length
+    ? mentorsCache.map(m=>`<option value="${m._id}">${m.name||m.email}</option>`).join('')
+    : '<option value="">No mentors found</option>';
+}
+
+function changeView(mode){
+  viewMode=mode;
+  document.getElementById('btnWeek').className = mode==='week' ? 'btn-primary flex items-center gap-2' : 'btn-secondary flex items-center gap-2';
+  document.getElementById('btnMonth').className = mode==='month' ? 'btn-primary flex items-center gap-2' : 'btn-secondary flex items-center gap-2';
+  document.getElementById('monthPanel').style.display = mode==='month' ? '' : 'none';
+  document.getElementById('weekPanel').style.display = mode==='week' ? '' : 'none';
+  loadSessions();
+}
+
+function renderCalendar(){
+  if(viewMode==='week') renderWeekView();
+  else renderMonthView();
+}
+
+function renderMonthView(){
+  const year=currentDate.getFullYear(), month=currentDate.getMonth();
+  document.getElementById('calTitle').textContent=new Date(year,month,1).toLocaleString('en',{month:'long',year:'numeric'});
+  const grid=document.getElementById('calGrid');
+  const headers=Array.from(grid.children).slice(0,7);
+  grid.innerHTML='';
+  headers.forEach(h=>grid.appendChild(h));
+
+  const firstDay=(new Date(year,month,1).getDay()+6)%7;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const daysInPrev=new Date(year,month,0).getDate();
+  const today=new Date();
+
+  for(let i=firstDay-1;i>=0;i--){
+    const cell=document.createElement('div');
+    cell.className='cal-cell other-month';
+    cell.innerHTML=`<div class="cal-day">${daysInPrev-i}</div>`;
+    grid.appendChild(cell);
+  }
+
+  const filtered=sessions.filter(s=>(activeFilter==='all'||s.type===activeFilter)&&s.status!=='cancelled');
+
+  for(let d=1;d<=daysInMonth;d++){
+    const cell=document.createElement('div');
+    const isToday=d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+    cell.className='cal-cell'+(isToday?' today':'');
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const daySessions=filtered.filter(s=>s.date===dateStr);
+    let html=`<div class="cal-day">${d}</div>`;
+    daySessions.slice(0,2).forEach(s=>{
+      html+=`<div class="cal-event ${s.type}" title="${s.student} · ${s.time}" onclick="showSessionDetail('${s.id}')">${s.student}</div>`;
+    });
+    if(daySessions.length>2) html+=`<div class="text-[10px] text-ink-faint mt-1 pl-1">+${daySessions.length-2} more</div>`;
+    cell.innerHTML=html;
+    grid.appendChild(cell);
+  }
+
+  const total=firstDay+daysInMonth;
+  const remaining=total%7===0?0:7-(total%7);
+  for(let d=1;d<=remaining;d++){
+    const cell=document.createElement('div');
+    cell.className='cal-cell other-month';
+    cell.innerHTML=`<div class="cal-day">${d}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+function renderWeekView(){
+  const weekStart=getWeekStart(currentDate);
+  const weekEnd=new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+  const sameMonth=weekStart.getMonth()===weekEnd.getMonth();
+  const titleFmt=(d)=>d.toLocaleString('en',{month:'short',day:'numeric'});
+  document.getElementById('calTitle').textContent = sameMonth
+    ? `${weekStart.toLocaleString('en',{month:'long'})} ${weekStart.getDate()}–${weekEnd.getDate()}, ${weekEnd.getFullYear()}`
+    : `${titleFmt(weekStart)} – ${titleFmt(weekEnd)}, ${weekEnd.getFullYear()}`;
+
+  const today=new Date();
+  const filtered=sessions.filter(s=>(activeFilter==='all'||s.type===activeFilter)&&s.status!=='cancelled');
+  const dayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  const grid=document.getElementById('weekGrid');
+  grid.innerHTML='';
+
+  for(let i=0;i<7;i++){
+    const day=new Date(weekStart); day.setDate(day.getDate()+i);
+    const dateStr=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+    const isToday=day.getDate()===today.getDate()&&day.getMonth()===today.getMonth()&&day.getFullYear()===today.getFullYear();
+    const daySessions=filtered.filter(s=>s.date===dateStr).sort((a,b)=>new Date(a.rawStart)-new Date(b.rawStart));
+
+    const col=document.createElement('div');
+    col.className='week-col'+(isToday?' today':'');
+    let body='';
+    if(daySessions.length){
+      body=daySessions.map(s=>`
+        <div class="week-event ${s.type}" onclick="showSessionDetail('${s.id}')">
+          <span class="we-time">${s.time}</span>
+          <span class="we-student">${s.student}</span><br>
+          <span>${s.mentor}</span>
+        </div>
+      `).join('');
+    } else {
+      body='<div class="week-empty">No sessions</div>';
+    }
+    col.innerHTML=`
+      <div class="week-col-header">
+        <div class="wd">${dayNames[i]}</div>
+        <div class="dn">${day.getDate()}</div>
+      </div>
+      <div class="week-col-body">${body}</div>
+    `;
+    grid.appendChild(col);
+  }
+}
+
+function showSessionDetail(id){
+  const s=sessions.find(x=>x.id===id);
+  if(!s)return;
+  if(confirm(`${s.student} · ${s.mentor} · ${s.type} · ${s.time}\n\nCancel this session?`)){
+    cancelSession(id);
+  }
+}
+
+async function cancelSession(id){
+  try{
+    const r=await fetch(`${API}/admin/sessions/${id}`,{method:'DELETE',headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      showToast('Session cancelled');
+      loadSessions();
+    } else {
+      showToast(d.message||'Could not cancel session');
+    }
+  }catch(e){showToast('Network error');}
+}
+
+function prevPeriod(){
+  if(viewMode==='week') currentDate.setDate(currentDate.getDate()-7);
+  else currentDate.setMonth(currentDate.getMonth()-1);
+  loadSessions();
+}
+function nextPeriod(){
+  if(viewMode==='week') currentDate.setDate(currentDate.getDate()+7);
+  else currentDate.setMonth(currentDate.getMonth()+1);
+  loadSessions();
+}
+
+function setFilter(btn,f){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCalendar();}
+function openBookModal(){document.getElementById('bookModal').classList.add('show');if(!studentsCache.length)loadPeopleForBooking();}
+function closeBookModal(){document.getElementById('bookModal').classList.remove('show');}
+
+async function saveSlot(){
+  const menteeId=document.getElementById('bookStudent').value;
+  const mentorId=document.getElementById('bookMentor').value;
+  const date=document.getElementById('bookDate').value;
+  const time=document.getElementById('bookTime').value;
+  const category=document.getElementById('bookType').value;
+  if(!menteeId||!mentorId||!date||!time){showToast('Please fill in all fields');return;}
+
+  const startTime=new Date(`${date}T${time}:00`).toISOString();
+  try{
+    const r=await fetch(`${API}/admin/sessions`,{
+      method:'POST',
+      headers:authHeaders(),
+      body:JSON.stringify({mentorId,menteeId,startTime,category}),
+    });
+    const d=await r.json();
+    if(r.ok&&d.success){
+      closeBookModal();
+      loadSessions();
+      showToast('✅ Session slot booked!');
+    } else {
+      showToast(d.message||'Could not book slot');
+    }
+  }catch(e){showToast('Network error booking slot');}
+}
+
+async function loadAdminUser(){
+  const token=getToken();if(!token)return;
+  try{
+    const r=await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      const u=d.user,n=u.name||u.email||'Admin';
+      document.getElementById('adminNameSidebar').textContent=n;
+      document.getElementById('adminEmailSidebar').textContent=u.email||'';
+      document.getElementById('adminAvatarInitial').textContent=n[0].toUpperCase();
+      const roles={super_admin:'Super Admin',admin:'Admin',mentor:'Mentor'};
+      document.getElementById('roleLabel').textContent=roles[u.role]||u.role;
+    }
+  }catch(e){}
+}
+document.getElementById('signOutLink').addEventListener('click',e=>{
+  e.preventDefault();
+  ['mc_token','admin_token','mc_user'].forEach(k=>localStorage.removeItem(k));
+  window.location.href='index.html';
+});
+window.addEventListener('load',()=>{lucide.createIcons();loadAdminUser();loadSessions();loadPeopleForBooking();});
+</script></body></html>

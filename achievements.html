@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | Achievements</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F; --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64; --gold:#B9924F; --mist:#F5F7FA; --mist-2:#EEF2F6; --ink:#0B1220; --ink-soft:#56657B; --ink-faint:#8B97A8; --line:rgba(11,18,32,0.08); }
+  *{box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:'DM Serif Display',serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:260px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;transition:transform .35s cubic-bezier(.4,0,.2,1), width .3s ease;overflow:hidden;}
+  .sidebar.collapsed{width:84px;}
+  .sidebar.collapsed .hide-on-collapse{display:none;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0;}
+  .sidebar.collapsed .nav-item .nav-label{display:none;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:292px;flex:1;min-width:0;transition:margin-left .3s ease;}
+  .main-content.collapsed{margin-left:116px;}
+  @media(max-width:1023px){.main-content,.main-content.collapsed{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;position:relative;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;transform:translateX(2px);}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--teal-2),var(--teal));}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .avatar-ring{border:2px solid var(--teal);padding:2px;border-radius:999px;}
+  [data-tip]{position:relative;}
+  .sidebar.collapsed [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;white-space:nowrap;padding:5px 9px;border-radius:8px;pointer-events:none;z-index:99;font-weight:500;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .ach-card{border:1px solid var(--line);border-radius:16px;padding:18px;transition:transform .15s, box-shadow .15s;}
+  .ach-card.unlocked:hover{transform:translateY(-2px);box-shadow:0 8px 20px -10px rgba(11,18,32,0.15);}
+  .ach-card.locked{opacity:0.45;filter:grayscale(0.6);}
+  .ach-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .col-gold{background:rgba(185,146,79,0.14);color:var(--gold);}
+  .col-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .col-purple{background:rgba(124,58,237,0.1);color:#7C3AED;}
+  .col-blue{background:rgba(37,99,235,0.1);color:#2563EB;}
+  .col-green{background:rgba(5,150,105,0.1);color:#059669;}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="flex items-center justify-between px-5 pt-6 pb-5">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">
+          <i data-lucide="cross" class="w-[18px] h-[18px] text-white"></i>
+        </div>
+        <div class="hide-on-collapse min-w-0">
+          <p class="font-display text-white text-[17px] leading-none tracking-tight">MedClarivo</p>
+          <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1">Elite</p>
+        </div>
+      </div>
+      <button class="hide-on-collapse text-white/40 hover:text-white hover:bg-white/8 rounded-lg p-1.5" onclick="toggleCollapse()">
+        <i data-lucide="panel-left-close" class="w-[17px] h-[17px]"></i>
+      </button>
+    </div>
+
+    <div class="mx-3 mb-3 p-2.5 rounded-2xl bg-white/5 flex items-center gap-3">
+      <div class="avatar-ring flex-shrink-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs font-display" id="sidebarAvatar" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">S</div>
+      </div>
+      <div class="hide-on-collapse flex-1 min-w-0">
+        <p class="text-white font-semibold text-[13px] truncate" id="sidebarName">—</p>
+        <p class="text-white/35 text-[10.5px] truncate">Student</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto no-scrollbar py-1">
+      <p class="hide-on-collapse px-6 py-2 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Main</p>
+      <a href="dashboard.html" class="nav-item" data-tip="Dashboard"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></a>
+      <a href="progress.html" class="nav-item" data-tip="Progress"><i data-lucide="trending-up"></i><span class="nav-label">Progress</span></a>
+      <a href="#" class="nav-item" data-tip="Content Library"><i data-lucide="library"></i><span class="nav-label flex-1">Content Library</span><span class="hide-on-collapse chip" style="background:rgba(15,168,154,0.12);color:#7FE9DD;padding:1px 7px;font-size:9.5px;border-radius:999px;font-weight:700;">Soon</span></a>
+      <a href="analytics.html" class="nav-item" data-tip="Analytics"><i data-lucide="bar-chart-3"></i><span class="nav-label">Analytics</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Mentorship</p>
+      <a href="my-mentor.html" class="nav-item" data-tip="My Mentor"><i data-lucide="users"></i><span class="nav-label">My Mentor</span></a>
+      <a href="student-sessions.html" class="nav-item" data-tip="Sessions"><i data-lucide="video"></i><span class="nav-label">Sessions</span></a>
+      <a href="student-messages.html" class="nav-item" data-tip="Messages"><i data-lucide="mail"></i><span class="nav-label">Messages</span></a>
+      <a href="dashboard.html#doubtSection" class="nav-item" data-tip="Doubt Forum"><i data-lucide="message-circle"></i><span class="nav-label">Doubt Forum</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Support</p>
+      <a href="raise-ticket.html" class="nav-item" data-tip="Raise a Ticket"><i data-lucide="shield-alert"></i><span class="nav-label">Raise a Ticket</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Account</p>
+      <a href="achievements.html" class="nav-item active" data-tip="Achievements"><i data-lucide="award"></i><span class="nav-label">Achievements</span></a>
+      <a href="settings.html" class="nav-item" data-tip="Settings"><i data-lucide="settings"></i><span class="nav-label">Settings</span></a>
+    </nav>
+
+    <a href="#" id="signOutBtn" class="nav-item mb-4 mx-3" style="color:rgba(252,165,165,0.7);"><i data-lucide="log-out"></i><span class="nav-label">Sign Out</span></a>
+  </aside>
+
+  <main class="main-content" id="mainContent">
+    <div class="topbar">
+      <div>
+        <p class="text-ink font-semibold text-sm">Achievements</p>
+        <p class="text-ink-faint text-xs" id="progressLabel">Loading…</p>
+      </div>
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-5xl mx-auto space-y-6">
+      <section class="panel p-6">
+        <div id="achievementsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p class="text-ink-faint text-sm col-span-full text-center py-10">Loading achievements…</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API = 'https://med-clarivo.onrender.com/api';
+  function getToken() { return localStorage.getItem('mc_token'); }
+  const token = getToken();
+  if (!token) window.location.href = 'index.html';
+
+  lucide.createIcons();
+
+  function toggleCollapse(){
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    document.getElementById('mainContent').classList.toggle('collapsed');
+  }
+
+  document.getElementById('signOutBtn').addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('mc_token');
+    localStorage.removeItem('mc_user');
+    window.location.href = 'index.html';
+  });
+
+  async function loadMe() {
+    try {
+      const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        document.getElementById('sidebarName').textContent = data.user.name || data.user.email;
+        document.getElementById('sidebarAvatar').textContent = (data.user.name || data.user.email).charAt(0).toUpperCase();
+      }
+    } catch (e) {}
+  }
+
+  function cardHTML(a) {
+    const cls = a.unlocked ? 'unlocked' : 'locked';
+    return `
+      <div class="ach-card ${cls}">
+        <div class="flex items-start gap-3">
+          <div class="ach-icon col-${a.color}">
+            <i data-lucide="${a.icon}" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-ink text-sm">${a.title}</p>
+            <p class="text-ink-faint text-xs mt-0.5">${a.description}</p>
+            ${a.unlocked
+              ? '<span class="inline-flex items-center gap-1 mt-2 text-teal-deep text-[11px] font-bold"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>Unlocked</span>'
+              : '<span class="inline-flex items-center gap-1 mt-2 text-ink-faint text-[11px] font-semibold"><i data-lucide="lock" class="w-3.5 h-3.5"></i>Locked</span>'}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function loadAchievements() {
+    const grid = document.getElementById('achievementsGrid');
+    try {
+      const res = await fetch(`${API}/achievements`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed to load achievements.');
+
+      document.getElementById('progressLabel').textContent = `${data.unlockedCount} of ${data.total} unlocked`;
+
+      const sorted = [...data.achievements].sort((a, b) => (b.unlocked - a.unlocked));
+      grid.innerHTML = sorted.map(cardHTML).join('');
+      lucide.createIcons();
+    } catch (err) {
+      grid.innerHTML = `<p class="text-red-600 text-sm col-span-full text-center py-10">${err.message}</p>`;
+    }
+  }
+
+  loadMe();
+  loadAchievements();
+</script>
+
+</body>
+</html>
