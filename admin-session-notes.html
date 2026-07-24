@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Session Notes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+  tailwind.config={darkMode:"class",theme:{extend:{colors:{navy:"#0A1424","navy-2":"#0F2038","navy-3":"#16304F",teal:"#0FA89A","teal-2":"#33D9C8","teal-deep":"#0A6E64",gold:"#B9924F","gold-soft":"rgba(185,146,79,0.12)",mist:"#F5F7FA","mist-2":"#EEF2F6",ink:"#0B1220","ink-soft":"#56657B","ink-faint":"#8B97A8",line:"rgba(11,18,32,0.08)"},fontFamily:{display:["DM Serif Display","serif"],sans:["DM Sans","sans-serif"]}}}}
+</script>
+<style>
+  :root{--navy:#0A1424;--navy-2:#0F2038;--navy-3:#16304F;--teal:#0FA89A;--teal-2:#33D9C8;--teal-deep:#0A6E64;--gold:#B9924F;--mist:#F5F7FA;--ink:#0B1220;--ink-soft:#56657B;}
+  *{box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{font-family:"DM Sans",sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:"DM Serif Display",serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-gold{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .chip-red{background:rgba(220,38,38,0.1);color:#DC2626;}
+  .chip-blue{background:rgba(59,130,246,0.1);color:#2563EB;}
+  .chip-purple{background:rgba(124,58,237,0.1);color:#7C3AED;}
+  .chip-grey{background:#EEF2F6;color:#56657B;}
+  .chip-green{background:rgba(22,163,74,0.1);color:#16A34A;}
+  .btn-primary{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-secondary{background:#EEF2F6;color:var(--ink);border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .btn-secondary:hover{background:#E2E8F0;}
+  .btn-teal{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-teal:hover{opacity:0.9;}
+  input,select,textarea{border:1px solid rgba(11,18,32,0.1);border-radius:12px;padding:10px 14px;font-size:13.5px;font-family:"DM Sans",sans-serif;background:#fff;outline:none;transition:border-color .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+  textarea{resize:vertical;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,36,0.5);backdrop-filter:blur(4px);z-index:150;display:none;align-items:center;justify-content:center;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box{background:#fff;border-radius:20px;padding:28px;width:480px;max-width:92vw;box-shadow:0 30px 60px -20px rgba(11,18,32,0.35);max-height:90vh;overflow-y:auto;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+  
+  .note-card{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:16px;padding:20px;transition:box-shadow .15s;cursor:pointer;}
+  .note-card:hover{box-shadow:0 6px 20px -8px rgba(11,18,32,0.15);}
+  .note-card.active-note{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,168,154,0.12);}
+  .observation-box{border:1.5px dashed rgba(11,18,32,0.12);border-radius:14px;padding:16px;background:#FAFBFC;}
+  .mic-btn{width:52px;height:52px;border-radius:50%;background:var(--teal);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;}
+  .mic-btn:hover{transform:scale(1.08);}
+  .mic-btn.recording{background:#DC2626;animation:pulse-red 1s infinite;}
+  @keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.4);}50%{box-shadow:0 0 0 8px rgba(220,38,38,0);}}
+  .timeline-card{border-left:3px solid rgba(15,168,154,0.3);padding-left:16px;padding-bottom:16px;}
+  .timeline-card:last-child{padding-bottom:0;}
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Super Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item " href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item active" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item " href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-5 py-4 border-t border-white/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-teal-2 font-bold text-sm" id="adminAvatarInitial">—</div>
+        <div class="min-w-0">
+          <p class="text-white text-sm font-semibold truncate" id="adminNameSidebar">—</p>
+          <p class="text-white/40 text-[11px] truncate" id="adminEmailSidebar">—</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden mr-1" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu"></i></button>
+        <div>
+          <p class="text-ink font-semibold text-sm">Classnotes & Transcripts</p>
+          <p class="text-ink-faint text-xs">Draft private observations, compose parental bulletins, record dictations</p>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveNote()"><i data-lucide="save" class="w-4 h-4"></i>Save Classnotes</button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-7xl mx-auto">
+
+      <!-- Session selector -->
+      <div class="panel p-4 mb-5 flex items-center gap-3 flex-wrap">
+        <div class="flex items-center gap-2 bg-mist rounded-xl px-3 py-2 border border-line">
+          <i data-lucide="file-text" class="w-4 h-4 text-teal"></i>
+          <span class="text-sm font-semibold text-ink" id="activeSessionLabel">Select a session from the list on the right…</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- Left: Notes editor -->
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Active note header -->
+          <div class="panel p-5">
+            <div class="flex items-start justify-between mb-1">
+              <div>
+                <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold">Editing Active Classnote</p>
+                <h2 class="font-display text-lg text-ink mt-0.5" id="noteTitle">Select a session to begin</h2>
+                <p class="text-ink-soft text-xs mt-0.5" id="noteMentor">—</p>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <p class="text-ink-faint text-xs" id="noteDate">—</p>
+                <span class="chip chip-teal" id="noteStatus">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Private + Shared notes -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="panel p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="lock" class="w-4 h-4 text-red-400"></i>
+                <div>
+                  <p class="font-semibold text-ink text-sm">Private Observations</p>
+                  <p class="text-ink-faint text-[11px]">Internal only — hidden from parents</p>
+                </div>
+              </div>
+              <textarea id="privateNotes" rows="6" placeholder="Type confidential observations, focus areas, behavioral flags…" class="text-sm"></textarea>
+            </div>
+            <div class="panel p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="users" class="w-4 h-4 text-teal"></i>
+                <div>
+                  <p class="font-semibold text-ink text-sm">Parental Shared Bulletin</p>
+                  <p class="text-ink-faint text-[11px]">Shared notes — visible to guardians</p>
+                </div>
+              </div>
+              <textarea id="sharedNotes" rows="6" placeholder="Type achievements, test results, homework assignments…" class="text-sm"></textarea>
+            </div>
+          </div>
+
+          <!-- Voice + Homework -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="panel p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="mic" class="w-4 h-4 text-teal"></i>
+                <div>
+                  <p class="font-semibold text-ink text-sm">Voice Dictation</p>
+                  <p class="text-ink-faint text-[11px]">Records a timer-based entry (no audio storage yet — metadata only)</p>
+                </div>
+              </div>
+              <div class="observation-box flex flex-col items-center gap-3 py-4">
+                <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+                  <i data-lucide="mic" class="w-6 h-6"></i>
+                </button>
+                <p class="text-ink-soft text-xs font-semibold" id="micStatus">Select a session first</p>
+                <p class="text-ink-faint text-[11px]">Click mic to record session summary</p>
+                <div id="recordingsList" class="w-full mt-2 space-y-2"></div>
+              </div>
+            </div>
+            <div class="panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="paperclip" class="w-4 h-4 text-teal"></i>
+                  <div>
+                    <p class="font-semibold text-ink text-sm">Homework Attachments</p>
+                    <p class="text-ink-faint text-[11px]">Share curriculum resources</p>
+                  </div>
+                </div>
+                <button onclick="showToast('File upload isn\'t wired up yet — no storage bucket configured')" class="p-1.5 rounded-lg bg-mist border border-line hover:bg-mist-2 transition-colors"><i data-lucide="plus" class="w-4 h-4 text-ink-soft"></i></button>
+              </div>
+              <div class="observation-box flex flex-col items-center justify-center py-8 text-center">
+                <i data-lucide="file-plus" class="w-8 h-8 text-ink-faint mb-2"></i>
+                <p class="text-ink-faint text-sm">No attachments uploaded yet</p>
+                <button onclick="showToast('File upload isn\'t wired up yet — no storage bucket configured')" class="mt-3 btn-secondary text-xs px-4 py-2">Upload File</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Previous notes timeline -->
+        <div class="space-y-4">
+          <div class="panel p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <i data-lucide="clock" class="w-4 h-4 text-teal"></i>
+              <div>
+                <p class="font-semibold text-ink text-sm">Previous Notes Timeline</p>
+                <p class="text-ink-faint text-[11px]" id="timelineSubject">Select a session to see history</p>
+              </div>
+            </div>
+            <div id="notesTimeline" class="space-y-4">
+              <p class="text-ink-faint text-sm text-center py-6">No session selected</p>
+            </div>
+          </div>
+
+          <!-- Recent sessions list -->
+          <div class="panel p-5">
+            <p class="font-semibold text-ink text-sm mb-3">Recent Sessions</p>
+            <div class="space-y-2" id="recentSessionsList">
+              <p class="text-ink-faint text-xs text-center py-4">Loading…</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const API='https://med-clarivo.onrender.com/api';
+function getToken(){return localStorage.getItem('mc_token')||localStorage.getItem('admin_token');}
+function authHeaders(){return {Authorization:`Bearer ${getToken()}`,'Content-Type':'application/json'};}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000);}
+
+let currentSessionId = null;
+let isRecording = false;
+let recordingTimer;
+let recordingSeconds = 0;
+
+function fmtDate(iso){
+  return new Date(iso).toLocaleString('en',{day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'});
+}
+
+async function loadRecentSessions(){
+  try{
+    const r=await fetch(`${API}/admin/session-notes/recent`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      renderRecentSessions(d.sessions);
+    } else {
+      showToast(d.message||'Could not load sessions');
+      document.getElementById('recentSessionsList').innerHTML='<p class="text-ink-faint text-xs text-center py-4">Could not load sessions</p>';
+    }
+  }catch(e){
+    showToast('Network error loading sessions');
+  }
+}
+
+function renderRecentSessions(sessions){
+  if(!sessions.length){
+    document.getElementById('recentSessionsList').innerHTML='<p class="text-ink-faint text-xs text-center py-4">No sessions yet</p>';
+    return;
+  }
+  document.getElementById('recentSessionsList').innerHTML = sessions.map(s=>`
+    <div class="p-3 rounded-xl border border-line hover:bg-mist cursor-pointer transition-colors ${s._id===currentSessionId?'border-teal':''}" onclick="selectSession('${s._id}')">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-semibold text-ink text-sm truncate">${(s.mentee&&s.mentee.name)||'Unknown student'}</p>
+        ${s.hasNote?'<span class="chip chip-teal">Noted</span>':''}
+      </div>
+      <p class="text-ink-faint text-xs">${s.category||'academic'} · ${new Date(s.startTime).toLocaleDateString()}</p>
+    </div>
+  `).join('');
+}
+
+async function selectSession(id){
+  currentSessionId = id;
+  try{
+    const r=await fetch(`${API}/admin/session-notes/${id}`,{headers:authHeaders()});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      const session=d.session, note=d.note;
+      document.getElementById('activeSessionLabel').textContent = `${session.mentee.name} · ${session.category||'academic'} · ${fmtDate(session.startTime)}`;
+      document.getElementById('noteTitle').textContent = `Student: ${session.mentee.name} · ${session.category||'academic'}`;
+      document.getElementById('noteMentor').textContent = `Mentor: ${session.mentor.name}`;
+      document.getElementById('noteDate').textContent = `Session: ${fmtDate(session.startTime)}`;
+      document.getElementById('noteStatus').textContent = session.status;
+      document.getElementById('privateNotes').value = note ? note.privateNotes||'' : '';
+      document.getElementById('sharedNotes').value = note ? note.sharedNotes||'' : '';
+      document.getElementById('micStatus').textContent = 'Microphone Ready';
+      renderRecordings(note && note.recordings ? note.recordings : []);
+      renderTimeline(d.timeline, session.mentee.name);
+    } else {
+      showToast(d.message||'Could not load session');
+    }
+  }catch(e){
+    showToast('Network error loading session');
+  }
+}
+
+function renderTimeline(timeline, studentName){
+  document.getElementById('timelineSubject').textContent = `Other notes for ${studentName}`;
+  if(!timeline || !timeline.length){
+    document.getElementById('notesTimeline').innerHTML = '<p class="text-ink-faint text-sm">No other notes found</p>';
+    return;
+  }
+  document.getElementById('notesTimeline').innerHTML = timeline.map(n=>`
+    <div class="timeline-card">
+      <p class="text-[11px] text-ink-faint mb-0.5">${n.session?fmtDate(n.session.startTime):''}</p>
+      <p class="font-semibold text-ink text-sm">${n.session?(n.session.category||'academic'):''} ${n.session&&n.session.topic?'· '+n.session.topic:''}</p>
+      <p class="text-ink-soft text-xs">${(n.sharedNotes||n.privateNotes||'').slice(0,100)}</p>
+    </div>
+  `).join('');
+}
+
+function renderRecordings(recordings){
+  const list=document.getElementById('recordingsList');
+  if(!recordings.length){list.innerHTML='';return;}
+  list.innerHTML = recordings.map((rec,i)=>{
+    const m=Math.floor(rec.durationSeconds/60), s=rec.durationSeconds%60;
+    return `<div class="flex items-center gap-2 bg-mist rounded-lg p-2"><i data-lucide="play-circle" class="w-4 h-4 text-teal flex-shrink-0"></i><span class="text-xs font-semibold">${rec.label||'Recording '+(i+1)} — ${m}:${String(s).padStart(2,'0')}</span></div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function saveNote(){
+  if(!currentSessionId){showToast('Select a session first');return;}
+  const priv=document.getElementById('privateNotes').value;
+  const shared=document.getElementById('sharedNotes').value;
+  try{
+    const r=await fetch(`${API}/admin/session-notes/${currentSessionId}`,{method:'PUT',headers:authHeaders(),body:JSON.stringify({privateNotes:priv,sharedNotes:shared})});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      showToast('✅ Classnotes saved successfully');
+      loadRecentSessions();
+    } else {
+      showToast(d.message||'Could not save notes');
+    }
+  }catch(e){showToast('Network error saving notes');}
+}
+
+function toggleRecording(){
+  if(!currentSessionId){showToast('Select a session first');return;}
+  isRecording = !isRecording;
+  const btn = document.getElementById('micBtn');
+  const status = document.getElementById('micStatus');
+  if(isRecording){
+    btn.classList.add('recording');
+    btn.innerHTML='<i data-lucide="square" class="w-6 h-6"></i>';
+    status.textContent = 'Recording… 0:00';
+    recordingSeconds=0;
+    recordingTimer=setInterval(()=>{
+      recordingSeconds++;
+      const m=Math.floor(recordingSeconds/60),s=recordingSeconds%60;
+      status.textContent=`Recording… ${m}:${String(s).padStart(2,'0')}`;
+    },1000);
+    lucide.createIcons();
+  } else {
+    clearInterval(recordingTimer);
+    btn.classList.remove('recording');
+    btn.innerHTML='<i data-lucide="mic" class="w-6 h-6"></i>';
+    status.textContent='Saving recording…';
+    saveRecording(recordingSeconds);
+    lucide.createIcons();
+  }
+}
+
+async function saveRecording(durationSeconds){
+  try{
+    const r=await fetch(`${API}/admin/session-notes/${currentSessionId}/recordings`,{method:'POST',headers:authHeaders(),body:JSON.stringify({label:'Recording',durationSeconds})});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      renderRecordings(d.note.recordings);
+      document.getElementById('micStatus').textContent='Recording saved';
+      setTimeout(()=>{document.getElementById('micStatus').textContent='Microphone Ready';},2000);
+    } else {
+      showToast(d.message||'Could not save recording');
+      document.getElementById('micStatus').textContent='Microphone Ready';
+    }
+  }catch(e){
+    showToast('Network error saving recording');
+    document.getElementById('micStatus').textContent='Microphone Ready';
+  }
+}
+
+async function loadAdminUser(){
+  const token=getToken();if(!token)return;
+  try{
+    const r=await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    const d=await r.json();
+    if(r.ok&&d.success){
+      const u=d.user,n=u.name||u.email||'Admin';
+      document.getElementById('adminNameSidebar').textContent=n;
+      document.getElementById('adminEmailSidebar').textContent=u.email||'';
+      document.getElementById('adminAvatarInitial').textContent=n[0].toUpperCase();
+      const roles={super_admin:'Super Admin',admin:'Admin',mentor:'Mentor'};
+      document.getElementById('roleLabel').textContent=roles[u.role]||u.role;
+    }
+  }catch(e){}
+}
+document.getElementById('signOutLink').addEventListener('click',e=>{
+  e.preventDefault();
+  ['mc_token','admin_token','mc_user'].forEach(k=>localStorage.removeItem(k));
+  window.location.href='index.html';
+});
+window.addEventListener('load',()=>{lucide.createIcons();loadAdminUser();loadRecentSessions();});
+</script></body></html>

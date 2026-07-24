@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Mentor — Doubt Forum</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{navy:"#0A1424","navy-2":"#0F2038","navy-3":"#16304F",teal:"#0FA89A","teal-2":"#33D9C8","teal-deep":"#0A6E64",gold:"#B9924F","gold-soft":"rgba(185,146,79,0.12)",mist:"#F5F7FA","mist-2":"#EEF2F6",ink:"#0B1220","ink-soft":"#56657B","ink-faint":"#8B97A8",line:"rgba(11,18,32,0.08)"},fontFamily:{display:["DM Serif Display","serif"],sans:["DM Sans","sans-serif"]}}}}</script>
+<style>
+  :root{--navy:#0A1424;--navy-2:#0F2038;--navy-3:#16304F;--teal:#0FA89A;--teal-2:#33D9C8;--teal-deep:#0A6E64;--gold:#B9924F;--mist:#F5F7FA;--ink:#0B1220;--ink-soft:#56657B;}
+  *{box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{font-family:"DM Sans",sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .font-display{font-family:"DM Serif Display",serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),inset 0 0 0 1px rgba(255,255,255,0.04);display:flex;flex-direction:column;z-index:60;overflow:hidden;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .nav-section{padding:8px 24px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,0.22);}
+  .panel{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-gold{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .chip-blue{background:rgba(59,130,246,0.1);color:#1D4ED8;}
+  .chip-purple{background:rgba(124,58,237,0.1);color:#6D28D9;}
+  .chip-grey{background:#EEF2F6;color:#56657B;}
+  .chip-red{background:rgba(220,38,38,0.1);color:#DC2626;}
+  .chip-green{background:rgba(22,163,74,0.1);color:#15803D;}
+  .chip-orange{background:rgba(234,88,12,0.1);color:#C2410C;}
+
+  .doubt-card{background:#fff;border:1px solid rgba(11,18,32,0.08);border-radius:16px;padding:20px;transition:all .15s;cursor:pointer;}
+  .doubt-card:hover{box-shadow:0 6px 24px -8px rgba(11,18,32,0.14);border-color:rgba(15,168,154,0.3);}
+  .doubt-card.open{border-left:4px solid var(--teal);}
+  .doubt-card.answered{border-left:4px solid rgba(22,163,74,0.6);}
+  .doubt-card.closed{border-left:4px solid rgba(11,18,32,0.15);opacity:.7;}
+  .doubt-card.urgent{border-left:4px solid #DC2626;background:rgba(220,38,38,0.01);}
+
+  .reply-bubble{border-radius:14px;padding:14px 16px;}
+  .reply-bubble.mentor{background:rgba(15,168,154,0.07);border:1px solid rgba(15,168,154,0.15);}
+  .reply-bubble.student{background:var(--mist);border:1px solid rgba(11,18,32,0.07);}
+  .reply-bubble.answer{background:rgba(22,163,74,0.07);border:1.5px solid rgba(22,163,74,0.25);}
+
+  .tab-btn{padding:8px 18px;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+  .tab-btn.active{background:var(--navy);color:#fff;}
+  .tab-btn:not(.active){background:transparent;color:var(--ink-soft);}
+  .tab-btn:not(.active):hover{background:#EEF2F6;}
+
+  .btn-primary{background:var(--navy);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-teal{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;}
+  .btn-teal:hover{opacity:.88;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid rgba(11,18,32,0.1);border-radius:11px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .btn-ghost:hover{background:var(--mist);color:var(--ink);}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,36,0.5);backdrop-filter:blur(4px);z-index:150;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box{background:#fff;border-radius:20px;padding:28px;width:700px;max-width:100%;box-shadow:0 30px 60px -20px rgba(11,18,32,0.35);margin:auto;}
+
+  input,select,textarea{border:1px solid rgba(11,18,32,0.1);border-radius:11px;padding:10px 14px;font-size:13.5px;font-family:"DM Sans",sans-serif;background:#fff;outline:none;transition:border-color .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:300;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s;}
+  .toast.show{opacity:1;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;}
+  @keyframes shimmer{0%{background-position:-400px 0;}100%{background-position:400px 0;}}
+  .skeleton{background:linear-gradient(90deg,#EEF2F6 25%,#e2e8f0 50%,#EEF2F6 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
+  .unread-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="px-6 pt-7 pb-2">
+    <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+    <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1">Mentor Panel</p>
+  </div>
+  <div class="mx-4 my-3 p-3 rounded-xl bg-white/5 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-teal/20 flex items-center justify-center text-teal-2 font-bold flex-shrink-0" id="mentorInitial">M</div>
+    <div class="min-w-0">
+      <p class="text-white text-sm font-semibold truncate" id="mentorName">Loading…</p>
+      <p class="text-white/40 text-[11px] truncate" id="mentorRole">Mentor</p>
+    </div>
+  </div>
+  <nav class="flex-1 overflow-y-auto py-1 space-y-0.5">
+    <p class="nav-section">Main</p>
+    <a class="nav-item" href="mentor-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+    <a class="nav-item" href="mentor-mentees.html"><i data-lucide="users"></i><span>My Mentees</span></a>
+    <a class="nav-item" href="mentor-requests.html"><i data-lucide="inbox"></i><span>Requests</span></a>
+    <a class="nav-item" href="#" onclick="showToast('Analytics coming soon')"><i data-lucide="bar-chart-3"></i><span>Analytics</span></a>
+    <p class="nav-section">Sessions</p>
+    <a class="nav-item" href="mentor-sessions.html"><i data-lucide="video"></i><span>Sessions</span></a>
+    <a class="nav-item active" href="mentor-doubt-forum.html"><i data-lucide="help-circle"></i><span>Doubt Forum</span>
+      <span class="ml-auto bg-teal/20 text-teal text-[10px] font-bold px-2 py-0.5 rounded-full" id="openBadge" style="display:none">0</span>
+    </a>
+    <a class="nav-item" href="mentor-inbox.html"><i data-lucide="message-circle"></i><span>Admin Messages</span></a>
+    <p class="nav-section">Account</p>
+    <a class="nav-item" href="#" onclick="showToast('Recognition coming soon')"><i data-lucide="trophy"></i><span>Recognition</span></a>
+    <a class="nav-item" href="#" onclick="showToast('Settings coming soon')"><i data-lucide="settings"></i><span>Settings</span></a>
+  </nav>
+  <div class="px-3 pb-6 mt-2">
+    <a href="#" id="signOutBtn" class="nav-item text-red-300/60 hover:text-red-300 hover:bg-red-500/10">
+      <i data-lucide="log-out"></i><span>Sign Out</span>
+    </a>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main-content">
+  <div class="topbar">
+    <div class="flex items-center gap-3">
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu" class="w-5 h-5"></i></button>
+      <div>
+        <p class="font-display text-lg text-ink leading-none">Doubt Forum</p>
+        <p class="text-ink-faint text-xs mt-0.5">Answer your students' doubts — open ones need your attention</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="chip chip-red" id="urgentCount" style="display:none"><i data-lucide="alert-circle" class="w-3 h-3"></i><span id="urgentNum">0</span> Urgent</span>
+      <span class="chip chip-teal" id="openCount"><i data-lucide="inbox" class="w-3 h-3"></i><span id="openNum">—</span> Open</span>
+    </div>
+  </div>
+
+  <div class="px-4 md:px-6 pb-16 max-w-6xl mx-auto space-y-5">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="panel p-4 text-center">
+        <p class="font-display text-3xl text-red-500" id="statUrgent">—</p>
+        <p class="text-ink-faint text-xs mt-1 font-semibold uppercase tracking-wider">Urgent</p>
+      </div>
+      <div class="panel p-4 text-center">
+        <p class="font-display text-3xl text-teal" id="statOpen">—</p>
+        <p class="text-ink-faint text-xs mt-1 font-semibold uppercase tracking-wider">Open</p>
+      </div>
+      <div class="panel p-4 text-center">
+        <p class="font-display text-3xl text-green-600" id="statAnswered">—</p>
+        <p class="text-ink-faint text-xs mt-1 font-semibold uppercase tracking-wider">Answered</p>
+      </div>
+      <div class="panel p-4 text-center">
+        <p class="font-display text-3xl text-ink" id="statTotal">—</p>
+        <p class="text-ink-faint text-xs mt-1 font-semibold uppercase tracking-wider">Total</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+      <!-- Left: Doubts list -->
+      <div class="lg:col-span-2 space-y-4">
+        <!-- Filters -->
+        <div class="panel p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div class="flex gap-1 bg-mist p-1 rounded-xl">
+            <button class="tab-btn active" id="tabOpen" onclick="switchTab('open')">Open</button>
+            <button class="tab-btn" id="tabAll" onclick="switchTab('all')">All</button>
+            <button class="tab-btn" id="tabAnswered" onclick="switchTab('answered')">Answered</button>
+          </div>
+          <div class="flex gap-2 ml-auto">
+            <select id="subjectFilter" class="text-sm py-2 px-3 w-auto" onchange="renderDoubts()">
+              <option value="">All subjects</option>
+            </select>
+            <select id="sortFilter" class="text-sm py-2 px-3 w-auto" onchange="renderDoubts()">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="priority">Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint"></i>
+          <input type="text" id="searchInput" placeholder="Search student doubts…" class="pl-11" oninput="renderDoubts()">
+        </div>
+
+        <!-- Skeleton -->
+        <div id="doubtsSkeleton" class="space-y-3">
+          <div class="h-28 skeleton rounded-xl"></div>
+          <div class="h-28 skeleton rounded-xl"></div>
+          <div class="h-28 skeleton rounded-xl"></div>
+        </div>
+
+        <!-- List -->
+        <div id="doubtsList" class="space-y-3 hidden"></div>
+      </div>
+
+      <!-- Right: Answer panel -->
+      <div class="space-y-4" id="answerPanel">
+        <!-- Placeholder -->
+        <div class="panel p-8 flex flex-col items-center text-center" id="selectPrompt">
+          <div class="w-14 h-14 rounded-2xl bg-teal/10 flex items-center justify-center mb-3">
+            <i data-lucide="mouse-pointer-click" class="w-7 h-7 text-teal"></i>
+          </div>
+          <p class="font-display text-base text-ink">Select a doubt</p>
+          <p class="text-ink-faint text-sm mt-1">Click any doubt on the left to read and answer it</p>
+        </div>
+
+        <!-- Answer box (hidden until doubt selected) -->
+        <div class="panel p-5 hidden" id="activeAnswerBox">
+          <div class="mb-4">
+            <div class="flex items-center gap-2 flex-wrap mb-2" id="answerChips"></div>
+            <h3 class="font-display text-base text-ink leading-snug" id="answerQuestion">—</h3>
+            <p class="text-ink-faint text-xs mt-1" id="answerMeta">—</p>
+          </div>
+
+          <!-- Previous replies -->
+          <div class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1" id="answerReplies"></div>
+
+          <!-- Reply input -->
+          <div class="border-t border-line pt-4">
+            <label class="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">Your Answer</label>
+            <textarea id="mentorReplyInput" rows="4" placeholder="Write a clear, detailed answer. You can use plain text or include formulas…"></textarea>
+
+            <!-- Quick templates -->
+            <div class="flex gap-2 mt-2 flex-wrap">
+              <p class="text-ink-faint text-[11px] w-full">Quick templates:</p>
+              <button class="btn-ghost text-[11px] py-1 px-2" onclick="insertTemplate('concept')">Explain Concept</button>
+              <button class="btn-ghost text-[11px] py-1 px-2" onclick="insertTemplate('example')">Give Example</button>
+              <button class="btn-ghost text-[11px] py-1 px-2" onclick="insertTemplate('steps')">Step-by-step</button>
+            </div>
+
+            <div class="flex gap-2 mt-3">
+              <button class="btn-teal flex-1 py-2.5" onclick="submitMentorReply()">
+                <i data-lucide="send" class="w-4 h-4"></i>Post Answer
+              </button>
+              <button class="btn-ghost py-2.5" onclick="markAnswered()" title="Mark as answered without replying">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student info card -->
+        <div class="panel p-5 hidden" id="studentInfoCard">
+          <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-3">Student</p>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-teal/10 flex items-center justify-center text-teal-deep font-bold" id="studentCardInitial">S</div>
+            <div>
+              <p class="font-semibold text-ink text-sm" id="studentCardName">—</p>
+              <p class="text-ink-faint text-xs" id="studentCardEmail">—</p>
+            </div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between"><span class="text-ink-faint">Total doubts</span><span class="font-semibold text-ink" id="studentTotalDoubts">—</span></div>
+            <div class="flex justify-between"><span class="text-ink-faint">Open doubts</span><span class="font-semibold text-teal" id="studentOpenDoubts">—</span></div>
+          </div>
+          <button class="btn-ghost w-full mt-3 text-xs" onclick="showToast('Student profile coming soon')">
+            <i data-lucide="user" class="w-3 h-3"></i>View Full Profile
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+function getToken(){ return localStorage.getItem('mc_token') || localStorage.getItem('admin_token'); }
+function showToast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.classList.remove('show'),3000); }
+
+let allDoubts = [];
+let currentTab = 'open';
+let activeDoubtId = null;
+
+const templates = {
+  concept: 'Great question! Let me explain the concept:\n\nThe key idea here is...\n\nThis matters because...',
+  example: 'Let me give you a concrete example:\n\n📌 Example:\n...\n\n💡 Notice how...',
+  steps:   'Here\'s a step-by-step breakdown:\n\n1. First...\n2. Then...\n3. Finally...\n\n✅ Key takeaway:',
+};
+
+function insertTemplate(type){ document.getElementById('mentorReplyInput').value=templates[type]; }
+
+function timeAgo(d){ const diff=(Date.now()-new Date(d))/1000;if(diff<60)return'just now';if(diff<3600)return`${Math.floor(diff/60)}m ago`;if(diff<86400)return`${Math.floor(diff/3600)}h ago`;return`${Math.floor(diff/86400)}d ago`; }
+
+function statusChip(s){ const map={open:'chip-teal',answered:'chip-green',closed:'chip-grey'};const labels={open:'Open',answered:'Answered',closed:'Closed'};return`<span class="chip ${map[s]||'chip-grey'}">${labels[s]||s}</span>`; }
+function priorityChip(p){ const map={high:'chip-red',medium:'chip-gold',low:'chip-green'};return`<span class="chip ${map[p]||'chip-grey'}">${p||'medium'}</span>`; }
+
+async function loadDoubts(){
+  const token=getToken();
+  if(!token){window.location.href='index.html';return;}
+  try{
+    const res=await fetch(`${API}/doubts`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await res.json();
+    allDoubts=res.ok&&data.success?data.doubts||[]:[];
+  } catch(e){ allDoubts=[]; }
+
+  updateStats();
+  buildSubjectFilter();
+  renderDoubts();
+  document.getElementById('doubtsSkeleton').classList.add('hidden');
+  document.getElementById('doubtsList').classList.remove('hidden');
+}
+
+function updateStats(){
+  const urgent=allDoubts.filter(d=>d.status==='open'&&d.priority==='high');
+  const open=allDoubts.filter(d=>d.status==='open');
+  const answered=allDoubts.filter(d=>d.status==='answered');
+
+  document.getElementById('statUrgent').textContent=urgent.length;
+  document.getElementById('statOpen').textContent=open.length;
+  document.getElementById('statAnswered').textContent=answered.length;
+  document.getElementById('statTotal').textContent=allDoubts.length;
+  document.getElementById('openNum').textContent=open.length;
+  document.getElementById('openBadge').textContent=open.length;
+  if(open.length>0) document.getElementById('openBadge').style.display='inline-flex';
+
+  if(urgent.length>0){
+    document.getElementById('urgentCount').style.display='inline-flex';
+    document.getElementById('urgentNum').textContent=urgent.length;
+  }
+}
+
+function buildSubjectFilter(){
+  const subjects=[...new Set(allDoubts.map(d=>d.subject).filter(Boolean))];
+  const sel=document.getElementById('subjectFilter');
+  sel.innerHTML='<option value="">All subjects</option>';
+  subjects.forEach(s=>{ const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o); });
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  ['Open','All','Answered'].forEach(t=>{
+    const el=document.getElementById(`tab${t}`);
+    if(el) el.classList.toggle('active',t.toLowerCase()===tab);
+  });
+  renderDoubts();
+}
+
+function renderDoubts(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sub=document.getElementById('subjectFilter').value;
+  const sort=document.getElementById('sortFilter').value;
+  let filtered=allDoubts;
+  if(currentTab!=='all') filtered=filtered.filter(d=>d.status===currentTab);
+  if(sub) filtered=filtered.filter(d=>d.subject===sub);
+  if(q) filtered=filtered.filter(d=>d.question.toLowerCase().includes(q)||(d.student?.name||'').toLowerCase().includes(q)||(d.subject||'').toLowerCase().includes(q));
+
+  if(sort==='oldest') filtered.sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  else if(sort==='priority'){
+    const order={high:0,medium:1,low:2};
+    filtered.sort((a,b)=>(order[a.priority]||1)-(order[b.priority]||1));
+  } else filtered.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  const el=document.getElementById('doubtsList');
+  if(filtered.length===0){
+    el.innerHTML=`<div class="empty-state"><div class="w-16 h-16 rounded-2xl bg-mist flex items-center justify-center mb-4"><i data-lucide="check-circle" class="w-8 h-8 text-teal"></i></div><p class="font-display text-lg text-ink">${currentTab==='open'?'All caught up!':'No doubts found'}</p><p class="text-ink-soft text-sm mt-1">${currentTab==='open'?'No open doubts right now. Great work!':'Try a different filter.'}</p></div>`;
+    lucide.createIcons();return;
+  }
+
+  el.innerHTML=filtered.map(d=>{
+    const isUrgent=d.priority==='high'&&d.status==='open';
+    const noReply=!d.replies?.length&&d.status==='open';
+    return`
+      <div class="doubt-card ${isUrgent?'urgent':d.status} ${activeDoubtId===d._id?'ring-2 ring-teal/30':''}" onclick="selectDoubt('${d._id}')">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-teal/10 flex items-center justify-center text-teal-deep font-bold text-sm flex-shrink-0">${(d.student?.name||'S')[0]}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="font-semibold text-ink text-xs">${d.student?.name||'Student'}</span>
+              <span class="chip chip-blue text-[10px]">${d.subject}</span>
+              ${priorityChip(d.priority)}
+              ${statusChip(d.status)}
+              ${noReply?'<span class="chip chip-orange text-[10px]">⚡ Needs reply</span>':''}
+            </div>
+            <p class="text-ink text-sm leading-snug line-clamp-2">${d.question}</p>
+            <div class="flex items-center gap-3 mt-2 text-ink-faint text-xs">
+              <span><i data-lucide="message-circle" class="w-3 h-3 inline mr-1"></i>${d.replies?.length||0} replies</span>
+              <span>${timeAgo(d.createdAt)}</span>
+              ${d.topic?`<span class="text-ink-soft">${d.topic}</span>`:''}
+            </div>
+          </div>
+          ${noReply?'<div class="unread-dot mt-1 flex-shrink-0"></div>':''}
+        </div>
+      </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function selectDoubt(id){
+  activeDoubtId=id;
+  renderDoubts(); // re-render to show active state
+
+  const token=getToken();
+  try{
+    const res=await fetch(`${API}/doubts/${id}`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await res.json();
+    if(!res.ok||!data.success){showToast('Could not load doubt');return;}
+    const d=data.doubt;
+
+    // Update cache
+    const idx=allDoubts.findIndex(x=>x._id===id);
+    if(idx!==-1) allDoubts[idx]=d;
+
+    // Show answer box
+    document.getElementById('selectPrompt').classList.add('hidden');
+    document.getElementById('activeAnswerBox').classList.remove('hidden');
+    document.getElementById('studentInfoCard').classList.remove('hidden');
+
+    document.getElementById('answerChips').innerHTML=
+      `<span class="chip chip-blue">${d.subject}</span>${d.topic?`<span class="text-ink-faint text-sm">· ${d.topic}</span>`:''}${statusChip(d.status)}${priorityChip(d.priority)}`;
+    document.getElementById('answerQuestion').textContent=d.question;
+    document.getElementById('answerMeta').textContent=`From ${d.student?.name||'Student'} · ${timeAgo(d.createdAt)}`;
+
+    // Student info
+    const s=d.student||{};
+    document.getElementById('studentCardInitial').textContent=(s.name||'S')[0];
+    document.getElementById('studentCardName').textContent=s.name||'Unknown';
+    document.getElementById('studentCardEmail').textContent=s.email||'';
+    const studentDoubts=allDoubts.filter(x=>x.student?._id===s._id||x.student===s._id);
+    document.getElementById('studentTotalDoubts').textContent=studentDoubts.length;
+    document.getElementById('studentOpenDoubts').textContent=studentDoubts.filter(x=>x.status==='open').length;
+
+    // Replies
+    const rc=document.getElementById('answerReplies');
+    if(!d.replies?.length){
+      rc.innerHTML='<p class="text-ink-faint text-sm text-center py-4">No replies yet — be the first to answer!</p>';
+    } else {
+      rc.innerHTML=d.replies.map(r=>{
+        const isM=['mentor','admin','super_admin'].includes(r.author?.role);
+        const cls=r.isAnswer?'answer':isM?'mentor':'student';
+        return`<div class="reply-bubble ${cls}">
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-full ${isM?'bg-teal/20':'bg-mist'} flex items-center justify-center text-[11px] font-bold ${isM?'text-teal-deep':'text-ink-soft'}">${(r.author?.name||'?')[0]}</div>
+            <span class="font-semibold text-ink text-xs">${r.author?.name||'User'}</span>
+            ${isM?'<span class="chip chip-teal text-[10px]">Mentor</span>':''}
+            ${r.isAnswer?'<span class="chip chip-green text-[10px]">✓ Accepted</span>':''}
+            <span class="text-ink-faint text-[11px] ml-auto">${timeAgo(r.createdAt)}</span>
+          </div>
+          <p class="text-ink text-sm whitespace-pre-line">${r.content}</p>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('mentorReplyInput').value='';
+    lucide.createIcons();
+  } catch(e){ showToast('Could not load doubt'); }
+}
+
+async function submitMentorReply(){
+  const content=document.getElementById('mentorReplyInput').value.trim();
+  if(!content){showToast('Please write a reply');return;}
+  if(!activeDoubtId)return;
+  const token=getToken();
+  try{
+    const res=await fetch(`${API}/doubts/${activeDoubtId}/reply`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body:JSON.stringify({content}),
+    });
+    const data=await res.json();
+    if(res.ok&&data.success){
+      showToast('✅ Answer posted!');
+      await selectDoubt(activeDoubtId);
+      await loadDoubts();
+    } else {
+      showToast('❌ '+(data.message||'Failed'));
+    }
+  } catch(e){ showToast('❌ Could not reach server'); }
+}
+
+async function markAnswered(){
+  if(!activeDoubtId)return;
+  showToast('Use "Post Answer" to answer the doubt');
+}
+
+async function loadUser(){
+  const token=getToken();
+  if(!token){window.location.href='index.html';return;}
+  try{
+    const res=await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await res.json();
+    if(res.ok&&data.success){
+      const name=data.user.name||'Mentor';
+      document.getElementById('mentorName').textContent=name;
+      document.getElementById('mentorInitial').textContent=name[0].toUpperCase();
+      document.getElementById('mentorRole').textContent=data.user.role||'Mentor';
+    }
+  } catch(e){}
+}
+
+document.getElementById('signOutBtn').addEventListener('click',e=>{
+  e.preventDefault();
+  ['mc_token','admin_token','mc_user'].forEach(k=>localStorage.removeItem(k));
+  window.location.href='index.html';
+});
+
+window.addEventListener('load',()=>{ lucide.createIcons(); loadUser(); loadDoubts(); });
+</script>
+</body>
+</html>

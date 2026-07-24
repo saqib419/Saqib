@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | Admin — Tickets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy:        "#0A1424",
+          "navy-2":    "#0F2038",
+          "navy-3":    "#16304F",
+          teal:        "#0FA89A",
+          "teal-2":    "#33D9C8",
+          "teal-deep": "#0A6E64",
+          gold:        "#B9924F",
+          "gold-soft": "rgba(185,146,79,0.12)",
+          mist:        "#F5F7FA",
+          "mist-2":    "#EEF2F6",
+          ink:         "#0B1220",
+          "ink-soft":  "#56657B",
+          "ink-faint": "#8B97A8",
+          line:        "rgba(11,18,32,0.08)",
+        },
+        fontFamily: {
+          display: ["DM Serif Display", "serif"],
+          sans:    ["DM Sans", "sans-serif"],
+          mono:    ["JetBrains Mono", "monospace"],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'DM Sans', sans-serif;
+    background:var(--mist);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+  ::selection{background:rgba(15,168,154,0.18);}
+
+  .app-shell{display:flex; min-height:100dvh;}
+
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px;
+    width:240px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); transition:transform .3s ease; } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:272px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-radius:14px;
+    color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; margin:1px 12px;
+    text-decoration:none; position:relative;
+  }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+
+  .panel{
+    background:#fff; border:1px solid var(--line); border-radius:20px;
+    box-shadow:0 1px 2px rgba(11,18,32,0.03);
+  }
+  .topbar{
+    position:sticky; top:16px; z-index:50; margin:0 16px 24px 16px;
+    border-radius:20px; background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+    padding:14px 22px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .chip{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+  .chip-open{ background:rgba(185,146,79,0.14); color:var(--gold); }
+  .chip-reviewing{ background:rgba(37,99,235,0.1); color:#1D4ED8; }
+  .chip-resolved{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; padding:10px 12px; color:var(--ink-faint); font-size:11px; text-transform:uppercase; letter-spacing:.04em; font-weight:700; border-bottom:1px solid var(--line); }
+  td{ padding:12px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  tr:hover td{ background:var(--mist); }
+  .btn-sm{ padding:5px 12px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; border:1px solid var(--line); background:#fff; }
+  .btn-sm:hover{ background:var(--mist-2); }
+
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(10,20,36,0.45); backdrop-filter:blur(2px); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal{ background:#fff; border-radius:20px; width:100%; max-width:520px; padding:24px; max-height:90vh; overflow-y:auto; }
+  .btn-primary{ background:linear-gradient(135deg,var(--teal),var(--teal-deep)); color:#fff; border-radius:12px; padding:10px; font-weight:700; font-size:13px; width:100%; cursor:pointer; }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0A1424;color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">Admin</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item active" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <p class="text-ink font-semibold text-sm" id="adminGreeting">Welcome</p>
+        <p class="text-ink-faint text-xs">Concerns raised privately by students about their mentors</p>
+      </div>
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-6xl mx-auto space-y-6">
+
+      <section class="panel p-6">
+        <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+          <div>
+            <h2 class="font-display text-lg text-ink">Tickets</h2>
+            <p class="text-ink-faint text-xs" id="ticketCountLabel">Loading…</p>
+          </div>
+          <select id="statusFilter" class="border border-line rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal/30">
+            <option value="">All statuses</option>
+            <option value="open">Open</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table>
+            <thead>
+              <tr><th>When</th><th>Student</th><th>Mentor</th><th>Category</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="ticketsTableBody">
+              <tr><td colspan="6" class="text-ink-faint text-center py-6">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── Manage Ticket Modal ── -->
+<div class="modal-backdrop hidden" id="ticketModal">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-display text-lg text-ink">Manage Ticket</h3>
+      <button onclick="closeModal()" class="text-ink-faint hover:text-ink"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-4 text-sm">
+      <div>
+        <p class="text-ink-faint text-xs mb-1">Student</p>
+        <p class="text-ink font-medium" id="modalStudent">—</p>
+      </div>
+      <div>
+        <p class="text-ink-faint text-xs mb-1">Mentor</p>
+        <p class="text-ink font-medium" id="modalMentor">—</p>
+      </div>
+      <div>
+        <p class="text-ink-faint text-xs mb-1">Category</p>
+        <p class="text-ink font-medium" id="modalCategory">—</p>
+      </div>
+      <div>
+        <p class="text-ink-faint text-xs mb-1">Description</p>
+        <p class="text-ink-soft whitespace-pre-wrap" id="modalDescription">—</p>
+      </div>
+      <div>
+        <label class="block text-ink font-semibold text-xs mb-1.5">Status</label>
+        <select id="modalStatus" class="w-full px-3 py-2 rounded-xl bg-mist border border-line text-sm focus:outline-none focus:ring-1 focus:ring-teal">
+          <option value="open">Open</option>
+          <option value="reviewing">Reviewing</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-ink font-semibold text-xs mb-1.5">Admin Notes</label>
+        <textarea id="modalNotes" rows="3" class="w-full px-3 py-2 rounded-xl bg-mist border border-line text-sm focus:outline-none focus:ring-1 focus:ring-teal"></textarea>
+      </div>
+      <label class="flex items-center gap-2 text-xs text-ink-soft">
+        <input type="checkbox" id="modalMarkContacted"/> Mark student as contacted (now)
+      </label>
+      <p id="modalMsg" class="text-xs hidden"></p>
+      <button id="modalSaveBtn" class="btn-primary" onclick="saveTicket()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (t) {
+      t.textContent = msg;
+      t.className = 'toast show';
+      setTimeout(function(){ t.classList.remove('show'); }, 3000);
+    }
+  }
+  const token = localStorage.getItem('mc_token');
+  let allTickets = [];
+  let activeTicketId = null;
+
+  const CATEGORY_LABELS = {
+    asked_personal_contact: 'Asked for personal contact info',
+    inappropriate_behavior: 'Inappropriate or unprofessional behavior',
+    inappropriate_language: 'Inappropriate language',
+    other: 'Other concern',
+  };
+
+  if (window.lucide) lucide.createIcons();
+
+  document.getElementById('signOutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('mc_token');
+    localStorage.removeItem('mc_user');
+    window.location.href = 'index.html';
+  });
+
+  function statusChip(status) {
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    return `<span class="chip chip-${status}">${label}</span>`;
+  }
+
+  function renderRows() {
+    const filter = document.getElementById('statusFilter').value;
+    const body = document.getElementById('ticketsTableBody');
+    const filtered = filter ? allTickets.filter(t => t.status === filter) : allTickets;
+
+    if (!filtered.length) {
+      body.innerHTML = '<tr><td colspan="6" class="text-ink-faint text-center py-6">No tickets match this filter.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = filtered.map(t => `
+      <tr>
+        <td class="text-ink-faint whitespace-nowrap">${new Date(t.createdAt).toLocaleString()}</td>
+        <td class="text-ink-soft">${(t.student && (t.student.name || t.student.email)) || '—'}</td>
+        <td class="text-ink-soft">${(t.mentor && (t.mentor.name || t.mentor.email)) || '—'}</td>
+        <td class="text-ink-soft">${CATEGORY_LABELS[t.category] || t.category}</td>
+        <td>${statusChip(t.status)}</td>
+        <td class="text-right"><button class="btn-sm" onclick="openModal('${t._id}')">Manage</button></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('statusFilter').addEventListener('change', renderRows);
+
+  function openModal(id) {
+    const t = allTickets.find(x => x._id === id);
+    if (!t) return;
+    activeTicketId = id;
+    document.getElementById('modalStudent').textContent = (t.student && (t.student.name || t.student.email)) || '—';
+    document.getElementById('modalMentor').textContent = (t.mentor && (t.mentor.name || t.mentor.email)) || '—';
+    document.getElementById('modalCategory').textContent = CATEGORY_LABELS[t.category] || t.category;
+    document.getElementById('modalDescription').textContent = t.description;
+    document.getElementById('modalStatus').value = t.status;
+    document.getElementById('modalNotes').value = t.adminNotes || '';
+    document.getElementById('modalMarkContacted').checked = false;
+    document.getElementById('modalMsg').classList.add('hidden');
+    document.getElementById('ticketModal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function closeModal() {
+    document.getElementById('ticketModal').classList.add('hidden');
+    activeTicketId = null;
+  }
+
+  async function saveTicket() {
+    if (!activeTicketId) return;
+    const btn = document.getElementById('modalSaveBtn');
+    const msg = document.getElementById('modalMsg');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch(`${API_BASE}/tickets/${activeTicketId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          status: document.getElementById('modalStatus').value,
+          adminNotes: document.getElementById('modalNotes').value,
+          markContacted: document.getElementById('modalMarkContacted').checked,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Failed to update ticket');
+
+      const idx = allTickets.findIndex(x => x._id === activeTicketId);
+      if (idx !== -1) allTickets[idx] = data.ticket;
+      renderRows();
+      closeModal();
+    } catch (err) {
+      msg.textContent = err.message || 'Something went wrong.';
+      msg.className = 'text-xs text-red-600';
+      msg.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+    }
+  }
+
+  async function loadTickets() {
+    try {
+      const res = await fetch(`${API_BASE}/tickets`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!data.success) {
+        document.getElementById('ticketsTableBody').innerHTML =
+          `<tr><td colspan="6" class="text-red-600 text-center py-6">${data.message || 'Failed to load tickets.'}</td></tr>`;
+        return;
+      }
+      allTickets = data.tickets;
+      document.getElementById('ticketCountLabel').textContent = `${allTickets.length} total ticket${allTickets.length === 1 ? '' : 's'}`;
+      renderRows();
+    } catch (err) {
+      console.error('Failed to load tickets', err);
+      document.getElementById('ticketsTableBody').innerHTML =
+        '<tr><td colspan="6" class="text-red-600 text-center py-6">Network error loading tickets.</td></tr>';
+    }
+  }
+
+  if (!token) {
+    window.location.href = 'index.html';
+  } else {
+    const me = JSON.parse(localStorage.getItem('mc_user') || '{}');
+    document.getElementById('adminGreeting').textContent = `Welcome, ${me.name || 'Admin'}`;
+    document.getElementById('roleLabel').textContent = me.role === 'super_admin' ? 'Super Admin' : 'Admin';
+    loadTickets();
+  }
+</script>
+
+<div class="toast" id="toast"></div>
+</body>
+</html>

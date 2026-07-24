@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:        '#0C1B2E',
+          'ink-muted':'#4A5568',
+          'ink-faint':'#94A3B8',
+          teal:       '#0D9488',
+          'teal-dark':'#0A7A70',
+          'teal-pale':'#F0FDFA',
+          border:     '#E2E8F0',
+          surface:    '#FFFFFF',
+          bg:         '#F7F9FC',
+        },
+        fontFamily: {
+          serif: ['DM Serif Display', 'serif'],
+          sans:  ['DM Sans', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .glass-surface {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(226,232,240,0.6);
+  }
+  @keyframes float {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  .animate-float { animation: float 6s ease-in-out infinite; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    padding: 12px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 20px 48px rgba(12,27,46,0.12);
+    opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    z-index: 999; white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+    color: white;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #065F46; }
+  .toast.error   { background: #991B1B; }
+
+  body { min-height: max(884px, 100dvh); font-family: 'DM Sans', sans-serif; }
+</style>
+</head>
+
+<body class="bg-bg text-ink min-h-screen flex items-center justify-center overflow-x-hidden">
+
+<!-- Background blobs -->
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[100px] animate-float" style="background:rgba(13,148,136,0.08)"></div>
+  <div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] animate-float" style="background:rgba(12,27,46,0.05); animation-delay:-2s"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Main -->
+<main class="relative z-10 w-full max-w-md px-4 md:px-0 py-10">
+
+  <!-- Brand header -->
+  <header class="text-center mb-10">
+    <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-ink shadow-md mb-4">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+      </svg>
+    </div>
+    <h1 class="font-serif text-3xl text-ink tracking-tight mb-1">Med<em class="text-teal">Clarivo</em> Elite</h1>
+    <p class="text-sm text-ink-muted">The future of medical mastery starts here.</p>
+  </header>
+
+  <!-- Card -->
+  <div class="glass-surface px-8 py-10 rounded-[2rem] shadow-[0px_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0px_15px_50px_rgba(0,0,0,0.09)] transition-all">
+
+    <div class="mb-8">
+      <h2 class="font-serif text-2xl text-ink mb-1">Create your account</h2>
+      <p class="text-xs text-ink-muted">Join thousands of medical aspirants on their journey.</p>
+    </div>
+
+    <form class="space-y-5" id="signupForm" novalidate>
+
+      <!-- Full Name -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" for="name">Full Name</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-teal transition-colors text-[20px]">person</span>
+          <input class="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="name" name="name" placeholder="Dr. Arjun Mehta" type="text"/>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" for="email">Email Address</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-teal transition-colors text-[20px]">alternate_email</span>
+          <input class="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="email" name="email" placeholder="you@example.com" type="email"/>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" for="phone">Phone Number</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-teal transition-colors text-[20px]">phone</span>
+          <input class="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="phone" name="phone" placeholder="+91 98765 43210" type="tel"/>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" for="password">Password</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-teal transition-colors text-[20px]">lock</span>
+          <input class="w-full pl-12 pr-12 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="password" name="password" placeholder="Min. 8 characters" type="password"/>
+          <button class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink transition-colors cursor-pointer bg-none border-none text-[20px]" onclick="togglePassword()" type="button">visibility</button>
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" for="confirmPassword">Confirm Password</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-teal transition-colors text-[20px]">lock</span>
+          <input class="w-full pl-12 pr-12 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" type="password"/>
+          <button class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink transition-colors cursor-pointer bg-none border-none text-[20px]" onclick="toggleConfirm()" type="button">visibility</button>
+        </div>
+      </div>
+
+      <!-- Terms -->
+      <p class="text-xs text-center text-ink-muted px-2">
+        By creating an account you agree to our <a href="#" class="text-teal font-semibold hover:underline">Terms of Service</a> and <a href="#" class="text-teal font-semibold hover:underline">Privacy Policy</a>
+      </p>
+
+      <!-- Submit -->
+      <button id="submitBtn" class="relative w-full mt-2 py-4 bg-ink text-white text-sm font-semibold rounded-xl shadow-md hover:bg-teal-dark active:scale-[0.98] transition-all flex items-center justify-center gap-2 group overflow-hidden" type="submit">
+        <span class="btn-text">Create Account</span>
+        <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform btn-text">arrow_forward</span>
+        <div class="spinner hidden absolute w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+      </button>
+
+    </form>
+
+    <!-- Divider -->
+    <div class="relative my-8 text-center">
+      <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-border"></div>
+      </div>
+      <span class="relative bg-white px-4 text-xs text-ink-faint uppercase tracking-widest">or continue with</span>
+    </div>
+
+    <!-- Social -->
+    <div class="grid grid-cols-2 gap-4">
+      <button id="googleBtn" class="flex items-center justify-center gap-2 py-3 border border-border rounded-xl hover:bg-bg transition-all active:scale-[0.97] text-sm font-semibold text-ink-muted">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Google
+      </button>
+      <button id="appleBtn" class="flex items-center justify-center gap-2 py-3 border border-border rounded-xl hover:bg-bg transition-all active:scale-[0.97] text-sm font-semibold text-ink-muted">
+        <svg width="16" height="18" viewBox="0 0 814 1000" fill="#0C1B2E">
+          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.9 135.7-317.9 269-317.9 70.1 0 128.4 46.4 171.5 46.4 41.3 0 106.1-49.2 185.2-49.2zM624.5 93.6c32.4-38.5 55.7-92.1 55.7-145.6 0-7.5-.6-15.2-1.9-21.5-52.7 1.9-116.1 35.2-153.8 79.3-29.7 33.8-57.8 87.3-57.8 141.9 0 8.1 1.3 16.2 1.9 18.8 3.2.6 8.4 1.3 13.6 1.3 47.1 0 105.7-31.6 142.3-74.2z"/>
+        </svg>
+        Apple
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center">
+    <p class="text-sm text-ink-muted">
+      Already have an account?
+      <a class="text-teal font-semibold hover:underline underline-offset-4 transition-all ml-1" href="index.html">Sign in</a>
+    </p>
+  </footer>
+
+</main>
+
+
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const btn = event.currentTarget;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      btn.textContent = 'visibility';
+    }
+  }
+
+  // Input focus scale effect
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('focus', () => el.closest('.relative')?.classList.add('scale-[1.01]'));
+    el.addEventListener('blur',  () => el.closest('.relative')?.classList.remove('scale-[1.01]'));
+  });
+
+  // Ripple on submit button
+  document.getElementById('submitBtn').addEventListener('click', function(e) {
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `left:${e.clientX - e.target.offsetLeft}px;top:${e.clientY - e.target.offsetTop}px`;
+    ripple.classList.add('absolute','w-1','h-1','bg-white/30','rounded-full','pointer-events-none','animate-ping');
+    this.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+
+  function toggleConfirm() {
+    const input = document.getElementById('confirmPassword');
+    const btn = event.currentTarget;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      btn.textContent = 'visibility';
+    }
+  }
+
+  // Form submit → POST /api/auth/register
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name            = document.getElementById('name').value.trim();
+    const email           = document.getElementById('email').value.trim();
+    const phone           = document.getElementById('phone').value.trim();
+    const password        = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!name || !email || !password || !confirmPassword) {
+      return showToast('Please fill in all required fields.', 'error');
+    }
+    if (password.length < 8) {
+      return showToast('Password must be at least 8 characters.', 'error');
+    }
+    if (password !== confirmPassword) {
+      return showToast('Passwords do not match.', 'error');
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('opacity-80', 'pointer-events-none');
+    btn.querySelectorAll('.btn-text').forEach(el => el.classList.add('opacity-0'));
+    btn.querySelector('.spinner').classList.remove('hidden');
+
+    try {
+      const res  = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        localStorage.setItem('mc_token', data.token);
+        localStorage.setItem('mc_user',  JSON.stringify(data.user));
+        showToast(`🎉 Welcome, ${name.split(' ')[0]}!`, 'success');
+        setTimeout(() => window.location.href = 'onboarding.html', 1200);
+      } else {
+        const msg = data.errors?.[0]?.msg || data.message || 'Signup failed.';
+        showToast(msg, 'error');
+      }
+    } catch (err) {
+      showToast('Cannot reach server. The free server may be waking up — please try again in 30 seconds.', 'error');
+    } finally {
+      btn.classList.remove('opacity-80', 'pointer-events-none');
+      btn.querySelectorAll('.btn-text').forEach(el => el.classList.remove('opacity-0'));
+      btn.querySelector('.spinner').classList.add('hidden');
+    }
+  });
+
+  // OAuth
+  document.getElementById('googleBtn').addEventListener('click', () => window.location.href = `${API_BASE}/auth/google`);
+  document.getElementById('appleBtn').addEventListener('click',  () => window.location.href = `${API_BASE}/auth/apple`);
+
+ // Check for OAuth token on redirect back
+const params = new URLSearchParams(window.location.search);
+if (params.get('token')) {
+  localStorage.setItem('mc_token', params.get('token'));
+  window.history.replaceState({}, '', window.location.pathname);
+  showToast('✅ Account created!', 'success');
+  setTimeout(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${params.get('token')}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('mc_user', JSON.stringify(data.user));
+        window.location.href = data.user.onboardingComplete ? 'dashboard.html' : 'onboarding.html';
+      } else {
+        window.location.href = 'onboarding.html';
+      }
+    } catch (err) {
+      window.location.href = 'onboarding.html';
+    }
+  }, 1200);
+  }
+</script>
+</body>
+</html>

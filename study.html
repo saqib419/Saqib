@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+<script src="sessionGuard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedClarivo Elite — Study Mode</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0C1B2E;
+      --teal: #0D9488;
+      --light-bg: #F7F9FC;
+      --ink: #1A202C;
+      --ink-faint: #718096;
+    }
+    
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, var(--navy) 0%, #0F2F48 100%);
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    .stopwatch-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6rem;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+      text-shadow: 0 0 30px rgba(13, 148, 136, 0.3);
+    }
+
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+    }
+
+    .button-teal {
+      background: var(--teal);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .button-teal:hover {
+      background: #0a7f72;
+      transform: translateY(-2px);
+    }
+
+    .button-outline {
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .button-outline:hover {
+      background: var(--teal);
+      color: white;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+  <div class="w-full max-w-2xl">
+    <!-- Chapter Picker Modal -->
+    <div id="chapterModal" class="fixed inset-0 flex items-center justify-center modal-overlay z-50">
+      <div class="glass-card p-8 w-full max-w-md max-h-[36rem] overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6" style="font-family: 'DM Serif Display';">Select a Chapter</h2>
+        
+        <!-- In Progress Chapters -->
+        <div id="inProgressContainer" class="mb-6">
+          <h3 class="text-sm font-bold text-gray-600 mb-3">Resume In Progress</h3>
+          <div id="inProgressList" class="space-y-2"></div>
+        </div>
+
+        <!-- Browse All Subjects -->
+        <div id="browseAllContainer" class="hidden">
+          <div id="subjectListHeader" class="mb-3">
+            <h3 class="text-sm font-bold text-gray-600">All Subjects</h3>
+          </div>
+          <div id="subjectList" class="space-y-1.5"></div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button id="toggleBrowseBtn" onclick="toggleBrowseAll()" class="button-outline w-full py-2 rounded-lg mt-4 text-sm font-semibold">
+          Browse All Subjects
+        </button>
+      </div>
+    </div>
+
+    <!-- Study Mode (Hidden Initially) -->
+    <div id="studyMode" class="hidden flex flex-col items-center justify-center min-h-screen gap-8">
+      <!-- Stopwatch Display -->
+      <div class="text-center">
+        <p class="text-teal-200 text-lg mb-2">Study Time</p>
+        <div class="stopwatch-display" id="stopwatchDisplay">00:00:00</div>
+        <p class="text-teal-200 text-sm mt-4" id="chapterName"></p>
+      </div>
+
+      <!-- Stop Button -->
+      <button onclick="stopStudySession()" class="button-teal px-12 py-4 rounded-lg text-xl font-bold hover:scale-105">
+        Stop Session
+      </button>
+    </div>
+
+    <!-- Summary Modal (Hidden Initially) -->
+    <div id="summaryModal" class="hidden fixed inset-0 flex items-center justify-center modal-overlay z-50">
+      <div class="glass-card p-10 w-full max-w-md text-center">
+        <h2 class="text-3xl font-bold mb-6" style="font-family: 'DM Serif Display'; color: var(--teal);">Great Work!</h2>
+        
+        <div class="space-y-4 mb-8">
+          <div class="bg-gray-100 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Study Duration</p>
+            <p class="text-2xl font-bold" id="summaryDuration">--:--:--</p>
+          </div>
+          
+          <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg">
+            <p class="text-sm text-gray-700">XP Earned</p>
+            <p class="text-3xl font-bold text-orange-600" id="summaryXP">0</p>
+          </div>
+
+          <div class="bg-teal-100 p-4 rounded-lg">
+            <p class="text-sm text-gray-700">Current Streak</p>
+            <p class="text-2xl font-bold text-teal-600" id="summaryStreak">0</p>
+            <p class="text-xs text-gray-600">days 🔥</p>
+          </div>
+
+          <div class="bg-purple-100 p-4 rounded-lg">
+            <p class="text-sm text-gray-700">Level</p>
+            <p class="text-2xl font-bold text-purple-600" id="summaryLevel">1</p>
+          </div>
+        </div>
+
+        <p class="text-sm text-gray-600 mb-6">Redirecting back to dashboard...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://med-clarivo.onrender.com/api';
+    let selectedChapterId = null;
+    let stopwatchInterval = null;
+    let elapsedSeconds = 0;
+
+    // Initialize: Load in-progress chapters
+    async function loadInProgressChapters() {
+      try {
+        const token = localStorage.getItem('mc_token');
+        const res = await fetch(`${API_BASE}/study/in-progress`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        
+        if (data.success && data.chapters.length > 0) {
+          renderChapters(data.chapters, true);
+        } else {
+          document.getElementById('inProgressContainer').classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('Failed to load in-progress chapters:', err);
+        document.getElementById('inProgressContainer').classList.add('hidden');
+      }
+    }
+
+    // Render chapters in modal
+    function renderChapters(chapters, isInProgress = false) {
+      const list = isInProgress 
+        ? document.getElementById('inProgressList')
+        : document.getElementById('subjectList');
+
+      const html = chapters.map(ch => `
+        <button onclick="selectChapter('${ch._id}', '${ch.title}')" 
+          class="w-full text-left p-3 rounded-lg border border-teal-200 hover:bg-teal-50 transition">
+          <p class="font-semibold text-sm">${ch.title}</p>
+          <p class="text-xs text-gray-500">${ch.subject?.name || 'Unknown Subject'}</p>
+        </button>
+      `).join('');
+
+      list.innerHTML = html;
+    }
+
+    // Load all subjects for browsing
+    async function toggleBrowseAll() {
+      const browseContainer = document.getElementById('browseAllContainer');
+      const toggleBtn = document.getElementById('toggleBrowseBtn');
+
+      if (browseContainer.classList.contains('hidden')) {
+        browseContainer.classList.remove('hidden');
+        toggleBtn.textContent = 'Hide All Subjects';
+        await loadAllSubjects();
+      } else {
+        browseContainer.classList.add('hidden');
+        toggleBtn.textContent = 'Browse All Subjects';
+      }
+    }
+
+    // Load all subjects and chapters
+    async function loadAllSubjects() {
+      try {
+        const token = localStorage.getItem('mc_token');
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          const exam = data.user.onboarding?.exam;
+          // Fetch subjects for this exam
+          const subjectsRes = await fetch(`${API_BASE}/curriculum/subjects`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const subjectsData = await subjectsRes.json();
+          
+          if (subjectsData.success) {
+            renderSubjectList(subjectsData.subjects);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load subjects:', err);
+      }
+    }
+
+    // Subjects fetched once and cached, so drilling in/out doesn't need a re-fetch
+    let cachedSubjects = [];
+
+    // Step 1: just the subject list (e.g. Physics, Chemistry, Biology) — nothing else
+    function renderSubjectList(subjects) {
+      cachedSubjects = subjects;
+      document.getElementById('subjectListHeader').innerHTML =
+        '<h3 class="text-sm font-bold text-gray-600">All Subjects</h3>';
+
+      const list = document.getElementById('subjectList');
+      list.innerHTML = subjects.map(subj => `
+        <button onclick="showSubjectChapters('${subj.id}')"
+          class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:bg-teal-50 hover:border-teal-300 transition flex items-center justify-between">
+          <span class="font-semibold text-[13px]">${subj.name}</span>
+          <span class="text-[11px] text-gray-400">${subj.chapterCount} chapters &rsaquo;</span>
+        </button>
+      `).join('');
+    }
+
+    // Step 2: drill into one subject — its full chapter list, with a way back
+    function showSubjectChapters(subjectId) {
+      const subj = cachedSubjects.find(s => s.id === subjectId);
+      if (!subj) return;
+
+      document.getElementById('subjectListHeader').innerHTML = `
+        <button onclick="renderSubjectList(cachedSubjects)" class="text-xs font-semibold text-teal-700 hover:underline mb-2 flex items-center gap-1">
+          &larr; All Subjects
+        </button>
+        <h3 class="text-sm font-bold text-gray-600">${subj.name}</h3>`;
+
+      const list = document.getElementById('subjectList');
+      list.innerHTML = (subj.chapters || []).map(ch => `
+        <button onclick="selectChapter('${ch.id}', '${ch.title}')"
+          class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:bg-teal-50 hover:border-teal-300 transition">
+          <p class="font-semibold text-[13px] leading-tight">${ch.title}</p>
+          <p class="text-[11px] text-gray-400">${ch.status === 'completed' ? 'Completed' : ch.status === 'in_progress' ? `${ch.percentComplete}% complete` : 'Not started'}</p>
+        </button>
+      `).join('') || '<p class="text-xs text-gray-500">No chapters yet.</p>';
+    }
+
+    // Select a chapter and start stopwatch
+    function selectChapter(chapterId, chapterTitle) {
+      selectedChapterId = chapterId;
+      document.getElementById('chapterModal').classList.add('hidden');
+      document.getElementById('studyMode').classList.remove('hidden');
+      document.getElementById('chapterName').textContent = chapterTitle;
+      startStopwatch();
+    }
+
+    // Start stopwatch
+    function startStopwatch() {
+      elapsedSeconds = 0;
+      updateStopwatchDisplay();
+      stopwatchInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateStopwatchDisplay();
+      }, 1000);
+    }
+
+    // Update stopwatch display
+    function updateStopwatchDisplay() {
+      const hours = Math.floor(elapsedSeconds / 3600);
+      const mins = Math.floor((elapsedSeconds % 3600) / 60);
+      const secs = elapsedSeconds % 60;
+
+      const display = [hours, mins, secs]
+        .map(x => String(x).padStart(2, '0'))
+        .join(':');
+
+      document.getElementById('stopwatchDisplay').textContent = display;
+    }
+
+    // Stop study session
+    async function stopStudySession() {
+      clearInterval(stopwatchInterval);
+      
+      if (!selectedChapterId || elapsedSeconds < 60) {
+        alert('Study for at least 1 minute before submitting');
+        startStopwatch();
+        return;
+      }
+
+      const durationMinutes = Math.round(elapsedSeconds / 60);
+
+      try {
+        const token = localStorage.getItem('mc_token');
+        const res = await fetch(`${API_BASE}/study/sessions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            chapterId: selectedChapterId,
+            durationMinutes,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showSummary(data.userStats, durationMinutes);
+        } else {
+          alert('Failed to save session: ' + data.message);
+        }
+      } catch (err) {
+        console.error('Error saving session:', err);
+        alert('Failed to save session');
+      }
+    }
+
+    // Show summary and redirect
+    function showSummary(stats, duration) {
+      document.getElementById('studyMode').classList.add('hidden');
+      document.getElementById('summaryModal').classList.remove('hidden');
+
+      const hours = Math.floor(duration / 60);
+      const mins = duration % 60;
+      const durationStr = hours > 0 
+        ? `${hours}h ${mins}m` 
+        : `${mins}m`;
+
+      document.getElementById('summaryDuration').textContent = durationStr;
+      document.getElementById('summaryXP').textContent = stats.xpEarned;
+      document.getElementById('summaryStreak').textContent = stats.streak;
+      document.getElementById('summaryLevel').textContent = stats.level;
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 3000);
+    }
+
+    // Load chapters on page load
+    window.addEventListener('load', loadInProgressChapters);
+  </script>
+</body>
+</html>

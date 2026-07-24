@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | Parent Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy:        "#0A1424",
+          "navy-2":    "#0F2038",
+          "navy-3":    "#16304F",
+          teal:        "#0FA89A",
+          "teal-2":    "#33D9C8",
+          "teal-deep": "#0A6E64",
+          gold:        "#B9924F",
+          "gold-soft": "rgba(185,146,79,0.12)",
+          mist:        "#F5F7FA",
+          "mist-2":    "#EEF2F6",
+          ink:         "#0B1220",
+          "ink-soft":  "#56657B",
+          "ink-faint": "#8B97A8",
+          line:        "rgba(11,18,32,0.08)",
+        },
+        fontFamily: {
+          display: ["DM Serif Display", "serif"],
+          sans:    ["DM Sans", "sans-serif"],
+          mono:    ["JetBrains Mono", "monospace"],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'DM Sans', sans-serif;
+    background:var(--mist);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .font-display{font-family:'DM Serif Display', serif;}
+  ::selection{background:rgba(15,168,154,0.18);}
+
+  .app-shell{display:flex; min-height:100dvh;}
+
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px;
+    width:240px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); transition:transform .3s ease; } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:272px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-radius:14px;
+    color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; margin:1px 12px;
+    text-decoration:none; position:relative;
+  }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+
+  .panel{
+    background:#fff; border:1px solid var(--line); border-radius:20px;
+    box-shadow:0 1px 2px rgba(11,18,32,0.03);
+  }
+  .topbar{
+    position:sticky; top:16px; z-index:50; margin:0 16px 24px 16px;
+    border-radius:20px; background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+    padding:14px 22px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .chip{ display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+  .chip-teal{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+  .chip-gold{ background:var(--gold-soft); color:#8A6B36; }
+  .chip-navy{ background:rgba(11,18,32,0.06); color:var(--ink-soft); }
+  .msg-bubble{ max-width:78%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.5; }
+  .msg-mine{ background:var(--navy); color:#fff; margin-left:auto; border-bottom-right-radius:4px; }
+  .msg-theirs{ background:var(--mist-2); color:var(--ink); margin-right:auto; border-bottom-left-radius:4px; }
+  .bar-track{ background:var(--mist-2); border-radius:999px; overflow:hidden; height:8px; }
+  .bar-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--teal), var(--teal-2)); }
+  .day-bar-track{ background:var(--mist-2); border-radius:6px; overflow:hidden; width:100%; height:64px; display:flex; align-items:flex-end; }
+  .day-bar-fill{ width:100%; border-radius:6px 6px 0 0; background:linear-gradient(180deg, var(--teal-2), var(--teal)); transition:height .5s ease; min-height:2px; }
+  .btn-primary{ background:var(--navy); color:#fff; border-radius:14px; font-weight:700; transition:all .2s ease; }
+  .btn-primary:hover{ background:var(--navy-2); }
+  .btn-primary:disabled{ opacity:.6; cursor:not-allowed; }
+
+  .field-label{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:6px; }
+  .field-input{ width:100%; padding:10px 14px; border-radius:12px; background:var(--mist-2); border:1px solid var(--line); font-size:14px; }
+  .field-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,168,154,0.12); }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); }
+  .toggle-row:last-child{ border-bottom:none; }
+  .switch{ position:relative; width:42px; height:24px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(11,18,32,0.15); border-radius:999px; transition:.2s; }
+  .slider::before{ content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider{ background:var(--teal); }
+  input:checked + .slider::before{ transform:translateX(18px); }
+
+  .notes-toggle-btn{ font-size:11.5px; font-weight:700; color:var(--teal-deep); background:rgba(15,168,154,0.08); border:1px solid rgba(15,168,154,0.18); border-radius:999px; padding:3px 10px; cursor:pointer; transition:background .15s ease; flex-shrink:0; }
+  .notes-toggle-btn:hover{ background:rgba(15,168,154,0.16); }
+  .notes-panel{ font-size:12.5px; color:var(--ink-soft); background:var(--mist-2); border-radius:10px; padding:10px 12px; margin-top:6px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1">Parent View</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1">
+      <a class="nav-item active" data-target="overviewSection">
+        <i data-lucide="layout-dashboard"></i><span class="nav-label">Overview</span>
+      </a>
+      <a class="nav-item" data-target="consistencySection">
+        <i data-lucide="calendar-check"></i><span class="nav-label">Study Consistency</span>
+      </a>
+      <a class="nav-item" data-target="sessionsSection">
+        <i data-lucide="video"></i><span class="nav-label">Sessions</span>
+      </a>
+      <a class="nav-item" data-target="messagesSection">
+        <i data-lucide="message-circle"></i><span class="nav-label">Messages</span>
+      </a>
+      <a class="nav-item" data-target="concernSection">
+        <i data-lucide="flag"></i><span class="nav-label">Report a Concern</span>
+      </a>
+      <a class="nav-item" data-target="settingsSection">
+        <i data-lucide="settings"></i><span class="nav-label">Settings</span>
+      </a>
+    </nav>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span class="nav-label">Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <p class="text-ink font-semibold text-sm" id="parentGreeting">Welcome</p>
+        <p class="text-ink-faint text-xs" id="childNameSub">Loading…</p>
+      </div>
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-5xl mx-auto space-y-6">
+
+      <!-- ── No child linked yet ── -->
+      <div id="noChildState" class="panel p-10 text-center hidden">
+        <i data-lucide="user-x" class="w-10 h-10 text-ink-faint mx-auto mb-3"></i>
+        <p class="text-ink font-semibold text-base">No child linked to this account yet</p>
+        <p class="text-ink-faint text-sm mt-1">Contact MedClarivo support to link your child's account.</p>
+      </div>
+
+      <div id="dashboardContent" class="hidden space-y-6">
+
+        <!-- ── Overview ── -->
+        <section id="overviewSection">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="panel p-5">
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Streak</p>
+              <p class="font-display text-3xl text-ink"><span id="statStreak">0</span><span class="text-ink-faint text-base font-sans"> days</span></p>
+            </div>
+            <div class="panel p-5">
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Level</p>
+              <p class="font-display text-3xl text-ink"><span id="statLevel">1</span></p>
+            </div>
+            <div class="panel p-5">
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">XP</p>
+              <p class="font-display text-3xl text-ink"><span id="statXp">0</span></p>
+            </div>
+            <div class="panel p-5">
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Overall Mastery</p>
+              <p class="font-display text-3xl text-ink"><span id="statMastery">0</span><span class="text-ink-faint text-base font-sans">%</span></p>
+            </div>
+          </div>
+
+          <!-- Score goal: only rendered if the child actually set target/prev scores at onboarding -->
+          <div id="scoreProgressPanel" class="panel p-6 mb-6 hidden">
+            <h2 class="font-display text-lg text-ink mb-4">Score Goal</h2>
+            <div class="flex items-center gap-6">
+              <div>
+                <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Starting Score</p>
+                <p class="font-display text-2xl text-ink" id="scorePrev">—</p>
+              </div>
+              <i data-lucide="arrow-right" class="w-5 h-5 text-ink-faint"></i>
+              <div>
+                <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Target Score</p>
+                <p class="font-display text-2xl text-teal-deep" id="scoreTarget">—</p>
+              </div>
+            </div>
+            <p class="text-ink-faint text-xs mt-3" id="scoreNote"></p>
+          </div>
+
+          <div class="panel p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-display text-lg text-ink">Mentor</h2>
+            </div>
+            <div id="mentorCard" class="flex items-center gap-3">
+              <p class="text-ink-faint text-sm">No mentor assigned yet.</p>
+            </div>
+          </div>
+
+          <div class="panel p-6">
+            <h2 class="font-display text-lg text-ink mb-4">Subject Mastery</h2>
+            <div id="subjectList" class="space-y-4">
+              <p class="text-ink-faint text-sm">Loading…</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Study Consistency ── -->
+        <section id="consistencySection" class="panel p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-display text-lg text-ink">Study Consistency</h2>
+            <span class="chip chip-teal" id="consistencyChip">—</span>
+          </div>
+          <p class="text-ink-faint text-xs mb-5">How consistently your child studied this week — not just the lifetime total.</p>
+          <div class="grid grid-cols-7 gap-2 mb-3" id="dailyBars">
+            <p class="text-ink-faint text-sm col-span-7 text-center py-4">Loading…</p>
+          </div>
+          <p class="text-ink-faint text-xs" id="weeklyHoursNote"></p>
+        </section>
+
+        <!-- ── Sessions ── -->
+        <section id="sessionsSection" class="panel p-6">
+          <h2 class="font-display text-lg text-ink mb-4">Mentor Sessions</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-2">Upcoming</p>
+              <div id="upcomingSessionsList" class="space-y-2">
+                <p class="text-ink-faint text-sm">Loading…</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-2">Recent</p>
+              <div id="recentSessionsList" class="space-y-2">
+                <p class="text-ink-faint text-sm">Loading…</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Messages ── -->
+        <section id="messagesSection" class="panel p-6">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="font-display text-lg text-ink">Message the Mentor</h2>
+            <span class="chip chip-teal" id="messagesLiveBadge" style="display:none">
+              <span class="w-1.5 h-1.5 rounded-full bg-teal-deep"></span>Live
+            </span>
+          </div>
+          <p class="text-ink-faint text-xs mb-4" id="messagesSubtitle">Chat directly with your child's mentor.</p>
+
+          <div id="messagesEmpty" class="text-center py-8 hidden">
+            <i data-lucide="message-circle-x" class="w-8 h-8 text-ink-faint mx-auto mb-2"></i>
+            <p class="text-ink-faint text-sm font-semibold">No mentor linked yet</p>
+            <p class="text-ink-faint text-xs mt-1">Once your child has a mentor assigned, you can message them here.</p>
+          </div>
+
+          <div id="messagesThread" class="space-y-3 mb-4 max-h-96 overflow-y-auto pr-1"></div>
+
+          <div id="messageInputRow" class="flex gap-2 hidden">
+            <input id="messageInput" type="text" maxlength="2000" placeholder="Type a message…"
+                   class="flex-1 border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30"/>
+            <button id="sendMessageBtn" class="btn-primary px-5 py-2.5 text-sm">
+              Send
+            </button>
+          </div>
+        </section>
+
+        <!-- ── Report a Concern ── -->
+        <section id="concernSection" class="panel p-6">
+          <h2 class="font-display text-lg text-ink mb-1">Report a Concern</h2>
+          <p class="text-ink-faint text-xs mb-5">Use this to flag any conduct concern about your child's mentor. This goes directly and only to MedClarivo's admin team.</p>
+
+          <div class="space-y-3 mb-6">
+            <select id="concernCategory" class="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30">
+              <option value="inappropriate_behavior">Inappropriate behavior</option>
+              <option value="inappropriate_language">Inappropriate language</option>
+              <option value="asked_personal_contact">Asked for personal contact info</option>
+              <option value="other">Other concern</option>
+            </select>
+            <textarea id="concernDescription" rows="4" maxlength="2000" placeholder="Describe what happened…"
+              class="w-full border border-line rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 resize-none"></textarea>
+            <div id="concernError" class="hidden text-red-600 text-xs font-medium"></div>
+            <button id="submitConcernBtn" class="btn-primary px-5 py-2.5 text-sm">Submit Report</button>
+          </div>
+
+          <div class="border-t border-line pt-5">
+            <p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-3">Your past reports</p>
+            <div id="concernHistory" class="space-y-2">
+              <p class="text-ink-faint text-sm">Loading…</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ── Settings: always available, even before a child is linked ── -->
+      <section id="settingsSection" class="space-y-6">
+        <div class="panel p-6">
+          <h2 class="font-display text-lg text-ink mb-1">Profile</h2>
+          <p class="text-ink-faint text-xs mb-5">Your account information.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="field-label">Name</label>
+                <input id="settingsNameInput" type="text" class="field-input"/>
+              </div>
+              <div>
+                <label class="field-label">Phone</label>
+                <input id="settingsPhoneInput" type="text" class="field-input"/>
+              </div>
+            </div>
+            <div class="mb-5">
+              <label class="field-label">Email</label>
+              <input id="settingsEmailInput" type="email" class="field-input"/>
+            </div>
+            <button id="settingsProfileSaveBtn" class="btn-primary px-5 py-2.5 text-sm">Save Profile</button>
+          </div>
+
+          <div class="panel p-6">
+            <h2 class="font-display text-lg text-ink mb-1">Password</h2>
+            <p class="text-ink-faint text-xs mb-5">Change your account password.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="field-label">Current Password</label>
+                <input id="settingsCurrentPasswordInput" type="password" class="field-input"/>
+              </div>
+              <div>
+                <label class="field-label">New Password</label>
+                <input id="settingsNewPasswordInput" type="password" class="field-input"/>
+              </div>
+            </div>
+            <button id="settingsPasswordSaveBtn" class="btn-primary px-5 py-2.5 text-sm">Update Password</button>
+          </div>
+
+          <div class="panel p-6">
+            <h2 class="font-display text-lg text-ink mb-1">Notifications</h2>
+            <p class="text-ink-faint text-xs mb-1">Choose what you want to hear about.</p>
+            <div class="toggle-row">
+              <div>
+                <p class="text-ink font-semibold text-sm">Email Updates</p>
+                <p class="text-ink-faint text-xs">General platform announcements</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="settingsPrefEmailUpdates"/><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <p class="text-ink font-semibold text-sm">Session Reminders</p>
+                <p class="text-ink-faint text-xs">Reminders before your child's mentor sessions</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="settingsPrefSessionReminders"/><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <p class="text-ink font-semibold text-sm">Other Platform Updates</p>
+                <p class="text-ink-faint text-xs">Occasional updates about new features</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="settingsPrefForumReplies"/><span class="slider"></span></label>
+            </div>
+          </div>
+        </section>
+
+      </div>
+  </main>
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;background:var(--navy);color:#fff;opacity:0;transition:.3s;z-index:999;"></div>
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  const token = localStorage.getItem('mc_token');
+  let currentParentId = null;
+  let messagePollTimer = null;
+  let lastMessageCount = 0;
+
+  if (window.lucide) lucide.createIcons();
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(80px)'; }, 2800);
+  }
+
+  document.getElementById('signOutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('mc_token');
+    localStorage.removeItem('mc_user');
+    window.location.href = 'index.html';
+  });
+
+  document.querySelectorAll('.nav-item[data-target]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.nav-item[data-target]').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      const target = document.getElementById(el.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  async function loadChild() {
+    try {
+      const res = await fetch(`${API_BASE}/parent/child`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      if (!data.linked) {
+        document.getElementById('noChildState').classList.remove('hidden');
+        document.getElementById('dashboardContent').classList.add('hidden');
+        setText('childNameSub', 'No child linked');
+        return;
+      }
+
+      document.getElementById('dashboardContent').classList.remove('hidden');
+      const c = data.child;
+      setText('parentGreeting', 'Welcome back');
+      setText('childNameSub', `${c.name}'s Progress`);
+      setText('statStreak', c.streak);
+      setText('statLevel', c.level);
+      setText('statXp', c.xp);
+      setText('statMastery', c.overallMastery);
+
+      // Score goal — only show if the child actually set these at onboarding.
+      // Note: MedClarivo doesn't track a live "current mock-test score" field
+      // anywhere in the system, so we intentionally show this as a fixed
+      // starting-point-vs-goal, not a progress bar that would fabricate a
+      // percentage we can't actually measure.
+      if (c.targetScore != null) {
+        document.getElementById('scoreProgressPanel').classList.remove('hidden');
+        setText('scorePrev', c.prevScore != null ? c.prevScore : 'Not set');
+        setText('scoreTarget', c.targetScore);
+        setText('scoreNote', c.prevScore != null
+          ? `Goal set at onboarding: improve from ${c.prevScore} to ${c.targetScore}. MedClarivo doesn't yet track live mock-test scores, so this reflects the goal, not day-to-day progress.`
+          : 'Target score set at onboarding.');
+      }
+
+      const mentorCard = document.getElementById('mentorCard');
+      if (data.mentor) {
+        mentorCard.innerHTML = `
+          <div class="w-11 h-11 rounded-full bg-navy flex items-center justify-center text-white font-display text-lg flex-shrink-0">
+            ${data.mentor.name.charAt(0)}
+          </div>
+          <div>
+            <p class="text-ink font-semibold text-sm">${data.mentor.name}</p>
+            <p class="text-ink-faint text-xs">${data.mentor.title || 'Mentor'}</p>
+          </div>
+          <span class="ml-auto chip chip-teal">Assigned</span>
+        `;
+        document.getElementById('messageInputRow').classList.remove('hidden');
+        document.getElementById('messagesEmpty').classList.add('hidden');
+        document.getElementById('messagesLiveBadge').style.display = '';
+        loadMessages(false);
+        if (messagePollTimer) clearInterval(messagePollTimer);
+        messagePollTimer = setInterval(() => loadMessages(true), 8000);
+      } else {
+        mentorCard.innerHTML = `<p class="text-ink-faint text-sm">No mentor assigned yet.</p>`;
+        document.getElementById('messagesEmpty').classList.remove('hidden');
+        document.getElementById('messageInputRow').classList.add('hidden');
+      }
+
+      loadSubjects();
+      loadConsistency();
+      loadSessions();
+      loadConcernHistory();
+    } catch (err) {
+      console.error('Failed to load child data', err);
+    }
+  }
+
+  async function loadSubjects() {
+    try {
+      const res = await fetch(`${API_BASE}/parent/child/subjects`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      const list = document.getElementById('subjectList');
+      if (!data.success || !data.subjects || data.subjects.length === 0) {
+        list.innerHTML = '<p class="text-ink-faint text-sm">No subject data yet.</p>';
+        return;
+      }
+      list.innerHTML = data.subjects.map(s => `
+        <div>
+          <div class="flex justify-between text-xs mb-1.5">
+            <span class="text-ink font-semibold">${s.name}</span>
+            <span class="text-ink-faint">${s.mastery}%</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${s.mastery}%"></div></div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('Failed to load subjects', err);
+    }
+  }
+
+  async function loadConsistency() {
+    try {
+      const res = await fetch(`${API_BASE}/parent/child/analytics`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        document.getElementById('dailyBars').innerHTML = '<p class="text-ink-faint text-sm col-span-7 text-center py-4">Could not load study data.</p>';
+        return;
+      }
+      const a = data.analytics;
+      setText('consistencyChip', `${a.consistencyPct}% consistent`);
+      setText('weeklyHoursNote', `${a.weeklyHours} hours studied this week.`);
+
+      const maxMin = Math.max(1, ...a.dailyMinutes.map(d => d.minutes));
+      document.getElementById('dailyBars').innerHTML = a.dailyMinutes.map(d => {
+        const heightPct = Math.round((d.minutes / maxMin) * 100);
+        return `
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="day-bar-track"><div class="day-bar-fill" style="height:${d.minutes > 0 ? heightPct : 0}%"></div></div>
+            <span class="text-ink-faint text-[10px] font-semibold">${d.day}</span>
+          </div>`;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load consistency', err);
+    }
+  }
+
+  function formatSessionDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  async function loadSessions() {
+    try {
+      const res = await fetch(`${API_BASE}/parent/child/sessions`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const upcomingEl = document.getElementById('upcomingSessionsList');
+      const recentEl = document.getElementById('recentSessionsList');
+      if (!res.ok || !data.success) {
+        upcomingEl.innerHTML = '<p class="text-ink-faint text-sm">Could not load sessions.</p>';
+        recentEl.innerHTML = '';
+        return;
+      }
+      upcomingEl.innerHTML = data.upcoming.length
+        ? data.upcoming.map(s => `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-mist-2">
+            <span class="text-ink text-sm font-medium">${s.topic || 'Session'}</span>
+            <span class="text-ink-faint text-xs">${formatSessionDate(s.startTime)}</span>
+          </div>`).join('')
+        : '<p class="text-ink-faint text-sm">No upcoming sessions scheduled.</p>';
+
+      recentEl.innerHTML = data.recent.length
+        ? data.recent.map(s => `
+          <div class="p-2.5 rounded-xl bg-mist-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-ink text-sm font-medium">${s.topic || 'Session'}</span>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="chip ${s.status === 'completed' ? 'chip-teal' : 'chip-navy'}">${s.status === 'completed' ? 'Completed' : 'Cancelled'}</span>
+                ${s.status === 'completed' ? `<button class="notes-toggle-btn" onclick="toggleSessionNotes('${s.id}')">Notes</button>` : ''}
+              </div>
+            </div>
+            ${s.status === 'completed' ? `<div id="notes-${s.id}" class="hidden"></div>` : ''}
+          </div>`).join('')
+        : '<p class="text-ink-faint text-sm">No past sessions yet.</p>';
+    } catch (err) {
+      console.error('Failed to load sessions', err);
+    }
+  }
+
+  const sessionNotesCache = {};
+  async function toggleSessionNotes(sessionId) {
+    const panel = document.getElementById(`notes-${sessionId}`);
+    if (!panel) return;
+
+    if (!panel.classList.contains('hidden')) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+
+    if (sessionNotesCache[sessionId] !== undefined) {
+      panel.innerHTML = sessionNotesCache[sessionId];
+      return;
+    }
+
+    panel.innerHTML = '<div class="notes-panel">Loading notes…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/parent/child/sessions/${sessionId}/notes`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const html = (res.ok && data.success && data.sharedNotes)
+        ? `<div class="notes-panel">${data.sharedNotes.replace(/</g, '&lt;')}</div>`
+        : '<div class="notes-panel">No notes shared for this session yet.</div>';
+      sessionNotesCache[sessionId] = html;
+      panel.innerHTML = html;
+    } catch (err) {
+      console.error('Failed to load session notes', err);
+      panel.innerHTML = '<div class="notes-panel">Could not load notes right now.</div>';
+    }
+  }
+
+  async function loadMessages(isPoll) {
+    try {
+      const res = await fetch(`${API_BASE}/parent/messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      const messages = data.messages || [];
+      if (isPoll && messages.length === lastMessageCount) return; // nothing new, don't disrupt scroll position
+      lastMessageCount = messages.length;
+
+      const thread = document.getElementById('messagesThread');
+      if (!messages.length) {
+        thread.innerHTML = '<p class="text-ink-faint text-sm text-center py-6">No messages yet — say hello!</p>';
+        return;
+      }
+      thread.innerHTML = messages.map(m => {
+        const mine = m.sender === currentParentId;
+        const time = new Date(m.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        return `
+          <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+            <div class="msg-bubble ${mine ? 'msg-mine' : 'msg-theirs'}">${m.content.replace(/</g,'&lt;')}</div>
+            <span class="text-ink-faint text-[10px] mt-0.5 ${mine ? 'mr-1' : 'ml-1'}">${time}</span>
+          </div>`;
+      }).join('');
+      thread.scrollTop = thread.scrollHeight;
+    } catch (err) {
+      console.error('Failed to load messages', err);
+    }
+  }
+
+  document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    if (!content) return;
+    input.value = '';
+    try {
+      const res = await fetch(`${API_BASE}/parent/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content }),
+      });
+      const data = await res.json();
+      if (data.success) loadMessages(false);
+      else input.value = content;
+    } catch (err) {
+      console.error('Failed to send message', err);
+      input.value = content;
+    }
+  });
+
+  document.getElementById('messageInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('sendMessageBtn').click();
+  });
+
+  async function loadConcernHistory() {
+    try {
+      const res = await fetch(`${API_BASE}/parent/concerns`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const el = document.getElementById('concernHistory');
+      if (!res.ok || !data.success || !data.tickets.length) {
+        el.innerHTML = '<p class="text-ink-faint text-sm">No reports filed yet.</p>';
+        return;
+      }
+      const statusChip = { open: 'chip-gold', reviewing: 'chip-navy', resolved: 'chip-teal' };
+      el.innerHTML = data.tickets.map(t => {
+        const responseHTML = t.adminNotes
+          ? `<div class="notes-panel">
+               <p class="font-semibold text-ink text-xs mb-1">Response from MedClarivo admin${t.resolvedAt ? ` · ${new Date(t.resolvedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}</p>
+               <p>${t.adminNotes.replace(/</g,'&lt;')}</p>
+             </div>`
+          : (t.status !== 'open'
+              ? `<p class="text-ink-faint text-xs mt-1.5">Your report is being looked into — no written response yet.</p>`
+              : '');
+        return `
+        <div class="p-2.5 rounded-xl bg-mist-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-ink text-sm font-medium">${t.category.replace(/_/g, ' ')}</p>
+              <p class="text-ink-faint text-xs">${new Date(t.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+            <span class="chip ${statusChip[t.status] || 'chip-navy'}">${t.status}</span>
+          </div>
+          ${responseHTML}
+        </div>`;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load concern history', err);
+    }
+  }
+
+  document.getElementById('submitConcernBtn').addEventListener('click', async () => {
+    const category = document.getElementById('concernCategory').value;
+    const description = document.getElementById('concernDescription').value.trim();
+    const errorEl = document.getElementById('concernError');
+    errorEl.classList.add('hidden');
+
+    if (!description) {
+      errorEl.textContent = 'Please describe the concern before submitting.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    const btn = document.getElementById('submitConcernBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    try {
+      const res = await fetch(`${API_BASE}/parent/concerns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ category, description }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        document.getElementById('concernDescription').value = '';
+        loadConcernHistory();
+      } else {
+        errorEl.textContent = data.message || 'Could not submit report.';
+        errorEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorEl.textContent = 'Network error — please try again.';
+      errorEl.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Report';
+    }
+  });
+
+  // ── Settings ──
+  async function loadSettings() {
+    try {
+      const res = await fetch(`${API_BASE}/settings`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+      const u = data.user;
+      document.getElementById('settingsNameInput').value = u.name || '';
+      document.getElementById('settingsEmailInput').value = u.email || '';
+      document.getElementById('settingsPhoneInput').value = u.phone || '';
+
+      const prefs = u.notificationPrefs || {};
+      document.getElementById('settingsPrefEmailUpdates').checked = prefs.emailUpdates ?? true;
+      document.getElementById('settingsPrefSessionReminders').checked = prefs.sessionReminders ?? true;
+      document.getElementById('settingsPrefForumReplies').checked = prefs.forumReplies ?? true;
+    } catch (err) {
+      console.error('Failed to load settings', err);
+    }
+  }
+
+  document.getElementById('settingsProfileSaveBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('settingsProfileSaveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const body = {
+        name: document.getElementById('settingsNameInput').value,
+        email: document.getElementById('settingsEmailInput').value,
+        phone: document.getElementById('settingsPhoneInput').value,
+      };
+      const res = await fetch(`${API_BASE}/settings/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('mc_user', JSON.stringify(data.user));
+        showToast('Profile updated.');
+      } else {
+        showToast(data.message || 'Could not update profile.');
+      }
+    } catch (err) {
+      showToast('Network error.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Profile';
+    }
+  });
+
+  document.getElementById('settingsPasswordSaveBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('settingsPasswordSaveBtn');
+    const currentPassword = document.getElementById('settingsCurrentPasswordInput').value;
+    const newPassword = document.getElementById('settingsNewPasswordInput').value;
+    if (!currentPassword || !newPassword) { showToast('Fill in both password fields.'); return; }
+
+    btn.disabled = true; btn.textContent = 'Updating…';
+    try {
+      const res = await fetch(`${API_BASE}/settings/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('Password updated.');
+        document.getElementById('settingsCurrentPasswordInput').value = '';
+        document.getElementById('settingsNewPasswordInput').value = '';
+      } else {
+        showToast(data.message || 'Could not update password.');
+      }
+    } catch (err) {
+      showToast('Network error.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Update Password';
+    }
+  });
+
+  async function saveNotificationPrefs() {
+    try {
+      const body = {
+        emailUpdates: document.getElementById('settingsPrefEmailUpdates').checked,
+        sessionReminders: document.getElementById('settingsPrefSessionReminders').checked,
+        forumReplies: document.getElementById('settingsPrefForumReplies').checked,
+      };
+      const res = await fetch(`${API_BASE}/settings/notifications`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) showToast('Preferences saved.');
+    } catch (err) {
+      console.error('Failed to save notification preferences', err);
+    }
+  }
+  ['settingsPrefEmailUpdates', 'settingsPrefSessionReminders', 'settingsPrefForumReplies'].forEach(id => {
+    document.getElementById(id).addEventListener('change', saveNotificationPrefs);
+  });
+
+  window.addEventListener('beforeunload', () => { if (messagePollTimer) clearInterval(messagePollTimer); });
+
+  (async function init() {
+    if (!token) { window.location.href = 'index.html'; return; }
+
+    // Fetch fresh identity rather than trusting a possibly-stale localStorage
+    // cache — this is what decides which message bubbles render as "mine".
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        currentParentId = data.user._id;
+        localStorage.setItem('mc_user', JSON.stringify(data.user));
+      } else {
+        window.location.href = 'index.html';
+        return;
+      }
+    } catch (e) {
+      // Network hiccup — fall back to cache rather than blocking the whole page.
+      const cached = JSON.parse(localStorage.getItem('mc_user') || 'null');
+      currentParentId = cached ? cached._id : null;
+    }
+
+    loadChild();
+    loadSettings();
+  })();
+</script>
+
+</body>
+</html>

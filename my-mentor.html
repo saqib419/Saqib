@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Mentor — MedClarivo Elite</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --gold-soft:rgba(185,146,79,0.14); --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; --ink-faint:#8A93A3; --line:rgba(11,18,32,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'DM Sans', sans-serif;
+    background:var(--mist);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+
+  .app-shell{display:flex; min-height:100dvh;}
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px;
+    width:260px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60;
+    overflow:hidden;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:292px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+
+  .nav-item{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-radius:14px;
+    color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; margin:1px 12px;
+    text-decoration:none; position:relative;
+  }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; transform:translateX(2px); }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item.active::before{
+    content:''; position:absolute; left:-12px; top:50%; transform:translateY(-50%);
+    width:3px; height:18px; border-radius:3px;
+    background:linear-gradient(180deg, var(--teal-2), var(--teal));
+  }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+
+  .topbar{
+    position:sticky; top:16px; z-index:50;
+    margin:0 16px 24px 0; border-radius:20px;
+    background:rgba(255,255,255,0.78);
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+  }
+
+  .panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:22px;
+    box-shadow:0 1px 2px rgba(11,18,32,0.04), 0 12px 28px -18px rgba(11,18,32,0.10);
+  }
+
+  .btn-primary{
+    background:linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%);
+    color:#fff; border:none; border-radius:14px; font-weight:700;
+    box-shadow:0 10px 24px -8px rgba(15,168,154,0.55);
+    transition:all .2s cubic-bezier(.4,0,.2,1);
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 16px 32px -8px rgba(15,168,154,0.6); }
+
+  .btn-outline{
+    background:transparent; border:1.5px solid var(--line); color:var(--ink);
+    border-radius:14px; font-weight:600; transition:all .2s ease;
+  }
+  .btn-outline:hover{ border-color:var(--teal); color:var(--teal-deep); background:rgba(15,168,154,0.05); }
+
+  .chip{ display:inline-flex; align-items:center; gap:4px; border-radius:999px; font-size:11px; font-weight:700; padding:3px 10px; letter-spacing:.02em; }
+  .chip-teal{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+  .chip-gold{ background:var(--gold-soft); color:#8A6B36; }
+  .chip-red{ background:rgba(220,38,38,0.08); color:#C0362C; }
+  .chip-navy{ background:rgba(11,18,32,0.06); color:var(--ink-soft); }
+
+  .avatar-ring{ border:2px solid var(--teal); padding:2px; border-radius:999px; }
+
+  .reveal{ opacity:0; transform:translateY(14px); animation:reveal .6s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes reveal{ to{ opacity:1; transform:translateY(0); } }
+
+  [data-tip]{ position:relative; }
+  .sidebar.collapsed [data-tip]:hover::after{
+    content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; font-size:11px; white-space:nowrap; padding:5px 9px;
+    border-radius:8px; pointer-events:none; z-index:99; font-weight:500;
+  }
+  th{ text-align:left; color:var(--ink-faint); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  td{ padding:14px 0; border-bottom:1px solid var(--line); font-size:14px; vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="px-5 pt-5 pb-4 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">
+          <i data-lucide="cross" class="w-[18px] h-[18px] text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="font-display text-white text-[17px] leading-none tracking-tight">MedClarivo</p>
+          <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1" style="color:var(--teal-2)">Elite</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mx-3 mb-3 p-2.5 rounded-2xl bg-white/5 flex items-center gap-3">
+      <div class="avatar-ring flex-shrink-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs font-display" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">M</div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white font-semibold text-[13px] truncate" id="sidebarName">Mmahin Bhat</p>
+        <p class="text-white/35 text-[10.5px] truncate">NEET UG</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto no-scrollbar py-1">
+      <p class="px-6 py-2 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Main</p>
+      <a href="dashboard.html" class="nav-item">
+        <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+      </a>
+      <a href="progress.html" class="nav-item">
+        <i data-lucide="trending-up"></i><span>Progress</span>
+      </a>
+      <a href="#" class="nav-item">
+        <i data-lucide="library"></i><span class="flex-1">Content Library</span>
+        <span class="chip chip-teal" style="padding:1px 7px;font-size:9.5px">Soon</span>
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i><span>Analytics</span>
+      </a>
+
+      <p class="px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Mentorship</p>
+      <a href="my-mentor.html" class="nav-item active">
+        <i data-lucide="users"></i><span>My Mentor</span>
+      </a>
+      <a href="student-sessions.html" class="nav-item">
+        <i data-lucide="video"></i><span>Sessions</span>
+      </a>
+      <a href="student-messages.html" class="nav-item">
+        <i data-lucide="mail"></i><span>Messages</span>
+      </a>
+      <a href="dashboard.html#doubtSection" class="nav-item">
+        <i data-lucide="message-circle"></i><span class="flex-1">Doubt Forum</span>
+      </a>
+
+      <p class="px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Support</p>
+      <a href="raise-ticket.html" class="nav-item">
+        <i data-lucide="shield-alert"></i><span>Raise a Ticket</span>
+      </a>
+
+      <p class="px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Account</p>
+      <a href="dashboard.html#achievementsSection" class="nav-item">
+        <i data-lucide="award"></i><span>Achievements</span>
+      </a>
+      <a href="settings.html" class="nav-item">
+        <i data-lucide="settings"></i><span>Settings</span>
+      </a>
+    </nav>
+
+    <a href="index.html" class="nav-item mb-4 text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+      <i data-lucide="log-out"></i><span>Sign Out</span>
+    </a>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar mx-4 mt-4 px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl text-ink">My Mentor</h1>
+        <p class="text-ink-soft text-sm">Everything about your mentorship in one place.</p>
+      </div>
+    </div>
+
+    <main class="px-4 pt-6 pb-10 max-w-6xl">
+      <div id="content" class="text-center py-20 text-ink-faint">Loading mentor details&hellip;</div>
+    </main>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://med-clarivo.onrender.com/api';
+
+function initials(name) {
+  return (name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+function authHeaders() {
+  const token = localStorage.getItem('mc_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function loadMentor() {
+  try {
+    const profileRes = await fetch(`${API_BASE}/auth/my-mentor`, { headers: authHeaders() });
+    const profileData = await profileRes.json();
+
+    if (!profileData.success || !profileData.mentorAssigned) {
+      renderNoMentor();
+      return;
+    }
+
+    let sessionData = { stats: {}, upcomingSessions: [], sessionHistory: [], joinLink: null };
+    try {
+      const sessionsRes = await fetch(`${API_BASE}/student/mentor/my-mentor`, { headers: authHeaders() });
+      if (sessionsRes.ok) sessionData = await sessionsRes.json();
+    } catch (e) {}
+
+    render(profileData.mentor, sessionData);
+  } catch (err) {
+    renderNoMentor();
+  } finally {
+    lucide.createIcons();
+  }
+}
+
+function render(mentor, sessionData) {
+  const stats = sessionData.stats || {};
+  const upcoming = sessionData.upcomingSessions || [];
+  const history = sessionData.sessionHistory || [];
+  const credentials = mentor.mentorProfile?.title || '';
+  const bio = mentor.mentorProfile?.bio || '';
+  const specialty = mentor.mentorProfile?.specialty;
+  const joinLink = sessionData.joinLink || '#';
+
+  const statusChip = (status) => {
+    if (status === 'completed') return `<span class="chip chip-teal">Completed</span>`;
+    if (status === 'cancelled') return `<span class="chip chip-red">Cancelled</span>`;
+    return `<span class="chip chip-navy">${status}</span>`;
+  };
+
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="panel p-7 lg:col-span-2 reveal">
+        <div class="flex items-center gap-4 mb-5">
+          <div class="avatar-ring flex-shrink-0">
+            <div class="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden font-display text-lg" style="background:var(--navy); color:#fff;">
+              ${mentor.avatar ? `<img src="${mentor.avatar}" class="w-full h-full object-cover" alt="${mentor.name}">` : initials(mentor.name)}
+            </div>
+          </div>
+          <div>
+            <h3 class="font-display text-xl text-ink">${mentor.name}</h3>
+            <p class="text-ink-soft text-sm">${credentials}</p>
+          </div>
+          <span class="chip chip-teal ml-auto">Assigned</span>
+        </div>
+        <p class="text-ink-soft text-sm leading-relaxed mb-5">${bio || 'No bio added yet.'}</p>
+        ${specialty ? `<div class="mb-6"><span class="chip chip-gold">${specialty}</span></div>` : ''}
+        <div class="flex items-center gap-3">
+          <a href="${joinLink}" class="btn-primary px-6 py-2.5 text-sm flex items-center gap-2">
+            <i data-lucide="video" class="w-4 h-4"></i> Join Session
+          </a>
+          <a href="student-messages.html?mentor=${mentor._id || mentor.id}" class="btn-outline px-6 py-2.5 text-sm flex items-center gap-2">
+            <i data-lucide="message-square" class="w-4 h-4"></i> Message
+          </a>
+        </div>
+        <p class="text-ink-faint text-xs mt-5">
+          <a href="settings.html#mentor-change" class="hover:text-ink-soft">Not a good fit? Request a mentor change &rarr;</a>
+        </p>
+      </div>
+
+      <div class="panel p-7 reveal" style="animation-delay:.08s">
+        <h3 class="font-display text-lg text-ink mb-4">At a Glance</h3>
+        <div class="space-y-3.5">
+          <div class="flex justify-between items-center"><span class="text-ink-soft text-sm">Total sessions</span><span class="font-bold text-ink text-sm font-mono">${stats.totalSessions ?? 0}</span></div>
+          <div class="flex justify-between items-center"><span class="text-ink-soft text-sm">This month</span><span class="font-bold text-ink text-sm font-mono">${stats.sessionsThisMonth ?? 0}</span></div>
+          <div class="flex justify-between items-center"><span class="text-ink-soft text-sm">Completed</span><span class="font-bold text-ink text-sm font-mono">${stats.completedSessions ?? 0}</span></div>
+          <div class="flex justify-between items-center"><span class="text-ink-soft text-sm">Open doubts</span><span class="font-bold text-ink text-sm font-mono">${stats.openDoubts ?? 0}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel p-7 mb-6 reveal" style="animation-delay:.12s">
+      <h3 class="font-display text-lg text-ink mb-4">Upcoming Sessions</h3>
+      ${upcoming.length ? `
+        <table class="w-full">
+          <thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Status</th></tr></thead>
+          <tbody>
+            ${upcoming.map(s => `
+              <tr>
+                <td>${s.date}</td><td>${s.time}</td><td>${s.topic || '&mdash;'}</td>
+                <td><span class="chip chip-teal">Scheduled</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      ` : `
+        <div class="text-center py-8">
+          <i data-lucide="calendar-x" class="w-8 h-8 text-ink-faint mx-auto mb-2"></i>
+          <p class="text-ink-faint text-sm font-semibold">No sessions scheduled yet</p>
+          <p class="text-ink-faint text-xs mt-1">Sessions booked with your mentor will show up here.</p>
+        </div>
+      `}
+    </div>
+
+    <div class="panel p-7 reveal" style="animation-delay:.16s">
+      <h3 class="font-display text-lg text-ink mb-4">Session History</h3>
+      ${history.length ? `
+        <table class="w-full">
+          <thead><tr><th>Date</th><th>Topic</th><th>Notes</th><th>Status</th></tr></thead>
+          <tbody>
+            ${history.map(s => `
+              <tr>
+                <td>${s.date}</td><td>${s.topic || '&mdash;'}</td>
+                <td class="text-ink-soft" style="max-width:220px">${s.notes || '&mdash;'}</td>
+                <td>${statusChip(s.status)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      ` : `<p class="text-ink-faint text-sm text-center py-8">No past sessions yet.</p>`}
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+function renderNoMentor() {
+  document.getElementById('content').innerHTML = `
+    <div class="panel p-12 text-center reveal">
+      <i data-lucide="user-x" class="w-10 h-10 text-ink-faint mx-auto mb-3"></i>
+      <p class="text-ink-soft text-sm font-semibold mb-1">You don't have a mentor assigned yet.</p>
+      <p class="text-ink-faint text-xs mb-5">Once a mentor is assigned, their details will show up here.</p>
+      <a href="settings.html" class="btn-primary px-6 py-2.5 text-sm inline-flex items-center gap-2">
+        <i data-lucide="user-plus" class="w-4 h-4"></i> Request a Mentor
+      </a>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+loadMentor();
+lucide.createIcons();
+</script>
+</body>
+</html>

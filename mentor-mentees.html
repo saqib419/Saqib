@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Mentees — MedClarivo Elite</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F;
+    --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64;
+    --gold:#B9924F; --gold-soft:rgba(185,146,79,0.14); --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; --ink-faint:#8A93A3; --line:rgba(11,18,32,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ font-family:'DM Sans', sans-serif; background:var(--mist); color:var(--ink); -webkit-font-smoothing:antialiased; min-height:100dvh; }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+
+  .app-shell{display:flex; min-height:100dvh;}
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px;
+    width:260px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60; overflow:hidden;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:292px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+
+  .nav-item{
+    display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:14px;
+    color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500;
+    cursor:pointer; transition:all .2s ease; margin:1px 12px; text-decoration:none; position:relative;
+  }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; transform:translateX(2px); }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item.active::before{
+    content:''; position:absolute; left:-12px; top:50%; transform:translateY(-50%);
+    width:3px; height:18px; border-radius:3px; background:linear-gradient(180deg, var(--teal-2), var(--teal));
+  }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+
+  .topbar{
+    position:sticky; top:16px; z-index:50; margin:0 16px 24px 0; border-radius:20px;
+    background:rgba(255,255,255,0.78); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,0.7); box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);
+  }
+
+  .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:0 1px 2px rgba(11,18,32,0.04), 0 12px 28px -18px rgba(11,18,32,0.10); transition:box-shadow .25s ease, transform .25s ease; }
+  .panel:hover{ box-shadow:0 4px 10px rgba(11,18,32,0.05), 0 22px 44px -20px rgba(11,18,32,0.16); }
+
+  .btn-primary{ background:linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%); color:#fff; border:none; border-radius:14px; font-weight:700; box-shadow:0 10px 24px -8px rgba(15,168,154,0.55); transition:all .2s cubic-bezier(.4,0,.2,1); }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 16px 32px -8px rgba(15,168,154,0.6); }
+  .btn-outline{ background:transparent; border:1.5px solid var(--line); color:var(--ink); border-radius:14px; font-weight:600; transition:all .2s ease; }
+  .btn-outline:hover{ border-color:var(--teal); color:var(--teal-deep); background:rgba(15,168,154,0.05); }
+
+  .chip{ display:inline-flex; align-items:center; gap:4px; border-radius:999px; font-size:11px; font-weight:700; padding:3px 10px; letter-spacing:.02em; }
+  .chip-teal{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+  .chip-gold{ background:var(--gold-soft); color:#8A6B36; }
+  .chip-navy{ background:rgba(11,18,32,0.06); color:var(--ink-soft); }
+
+  .avatar-ring{ border:2px solid var(--teal); padding:2px; border-radius:999px; }
+  .track{ background:rgba(11,18,32,0.06); border-radius:999px; overflow:hidden; }
+  .fill{ background:linear-gradient(90deg, var(--teal), var(--teal-2)); border-radius:999px; transition:width 1.1s cubic-bezier(.4,0,.2,1); }
+
+  .reveal{ opacity:0; transform:translateY(14px); animation:reveal .6s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes reveal{ to{ opacity:1; transform:translateY(0); } }
+
+  [data-tip]{ position:relative; }
+  .sidebar.collapsed [data-tip]:hover::after{
+    content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; font-size:11px; white-space:nowrap; padding:5px 9px; border-radius:8px; pointer-events:none; z-index:99; font-weight:500;
+  }
+
+  .mentee-subjects{ max-height:0; overflow:hidden; transition:max-height .3s ease; }
+  .mentee-subjects.open{ max-height:400px; }
+
+  #missionModalOverlay{
+    position:fixed; inset:0; background:rgba(11,18,32,0.55);
+    display:none; align-items:center; justify-content:center; z-index:80; padding:24px;
+  }
+  #missionModalOverlay.open{ display:flex; }
+  #missionModal{
+    background:#fff; border-radius:22px; width:100%; max-width:520px; max-height:80vh;
+    display:flex; flex-direction:column; box-shadow:0 24px 64px -24px rgba(11,18,32,0.4);
+  }
+
+  .toast{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; padding:11px 20px; border-radius:12px;
+    font-size:13px; font-weight:600; z-index:200; box-shadow:0 10px 28px rgba(0,0,0,0.28);
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="px-5 pt-5 pb-4 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">
+          <i data-lucide="cross" class="w-[18px] h-[18px] text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="font-display text-white text-[17px] leading-none tracking-tight">MedClarivo</p>
+          <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1" style="color:var(--teal-2)">Mentor</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mx-3 mb-3 p-2.5 rounded-2xl bg-white/5 flex items-center gap-3">
+      <div class="avatar-ring flex-shrink-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs font-display" id="sidebarAvatar" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">A</div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white font-semibold text-[13px] truncate" id="sidebarName">Dr. Arjun Mehta</p>
+        <p class="text-white/35 text-[10.5px] truncate">Mentor</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto no-scrollbar py-1">
+      <p class="px-6 py-2 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Main</p>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+      </a>
+      <a href="mentor-mentees.html" class="nav-item active">
+        <i data-lucide="users"></i><span>My Mentees</span>
+      </a>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="user-check"></i><span class="flex-1">Requests</span>
+        <span class="chip chip-navy" style="padding:1px 7px;font-size:9.5px">Soon</span>
+      </a>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i><span>Analytics</span>
+      </a>
+
+      <p class="px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Mentorship</p>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="video"></i><span>Sessions</span>
+      </a>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="message-circle"></i><span class="flex-1">Doubt Forum</span>
+      </a>
+      <a href="mentor-inbox.html" class="nav-item">
+        <i data-lucide="megaphone"></i><span class="flex-1">Admin Messages</span>
+      </a>
+
+      <p class="px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Account</p>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="award"></i><span>Recognition</span>
+      </a>
+      <a href="mentor-dashboard.html" class="nav-item">
+        <i data-lucide="settings"></i><span>Settings</span>
+      </a>
+    </nav>
+
+    <button id="signOutBtn" class="nav-item mb-4 text-red-300/70 hover:text-red-300 hover:bg-red-500/10" style="background:none;border:none;cursor:pointer;font:inherit;text-align:left;">
+      <i data-lucide="log-out"></i><span>Sign Out</span>
+    </button>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar mx-4 mt-4 px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl text-ink">My Mentees</h1>
+        <p class="text-ink-soft text-sm">Everyone you're mentoring, and how they're progressing.</p>
+      </div>
+      <span id="menteeCountChip" class="chip chip-teal"></span>
+    </div>
+
+    <main class="px-4 pt-6 pb-10">
+      <div id="content" class="text-center py-20 text-ink-faint">Loading mentees&hellip;</div>
+    </main>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://med-clarivo.onrender.com/api';
+function getToken() { return localStorage.getItem('mc_token') || localStorage.getItem('admin_token'); }
+const token = getToken();
+if (!token) window.location.href = 'index.html';
+
+function authHeaders() { return { Authorization: `Bearer ${token}` }; }
+function initials(name) { return (name || '?').split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase(); }
+
+document.getElementById('signOutBtn').addEventListener('click', () => {
+  localStorage.removeItem('mc_token'); localStorage.removeItem('admin_token'); localStorage.removeItem('mc_user');
+  window.location.href = 'index.html';
+});
+
+async function loadMe() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`, { headers: authHeaders() });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      document.getElementById('sidebarName').textContent = data.user.name || data.user.email;
+      document.getElementById('sidebarAvatar').textContent = initials(data.user.name);
+    }
+  } catch (e) {}
+}
+
+async function loadMentees() {
+  try {
+    const res = await fetch(`${API_BASE}/mentor/mentees`, { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.success) { renderEmpty(); return; }
+    document.getElementById('menteeCountChip').textContent = `${data.count} mentee${data.count === 1 ? '' : 's'}`;
+    if (!data.mentees.length) { renderEmpty(); return; }
+    render(data.mentees);
+  } catch (err) {
+    renderEmpty();
+  } finally {
+    lucide.createIcons();
+  }
+}
+
+function masteryColor(pct) {
+  if (pct >= 70) return 'chip-teal';
+  if (pct >= 35) return 'chip-gold';
+  return 'chip-navy';
+}
+
+function render(mentees) {
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      ${mentees.map((m, i) => `
+        <div class="panel p-6 reveal" style="animation-delay:${i * 0.05}s">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="avatar-ring flex-shrink-0">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center font-display text-base" style="background:var(--navy); color:#fff;">
+                ${initials(m.name)}
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-display text-lg text-ink truncate">${m.name}</h3>
+              ${m.exam ? `<p class="text-ink-soft text-xs">${m.exam}</p>` : ''}
+            </div>
+            <span class="chip ${masteryColor(m.overallMastery)}">${m.overallMastery}%</span>
+          </div>
+
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="text-ink-faint text-xs">Overall mastery</span>
+              <span class="text-ink-soft text-xs font-mono">${m.completedChapters}/${m.totalChapters} chapters</span>
+            </div>
+            <div class="track h-2"><div class="fill h-2" style="width:${m.overallMastery}%"></div></div>
+          </div>
+
+          <div class="flex items-center gap-2 mb-3">
+            <button onclick="toggleSubjects('${m.id}')" class="btn-outline px-4 py-2 text-xs flex items-center gap-1.5 flex-1 justify-center">
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5" id="chevron-${m.id}"></i> Subject Breakdown
+            </button>
+            <a href="mentor-inbox.html?mentee=${m.id}" class="btn-primary px-4 py-2 text-xs flex items-center gap-1.5">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Message
+            </a>
+          </div>
+          <button onclick="openMissionModal('${m.id}', '${m.name.replace(/'/g, "\\'")}')" class="btn-outline w-full px-4 py-2 text-xs flex items-center justify-center gap-1.5 mb-3" style="border-color:rgba(15,168,154,0.35);color:var(--teal-deep)">
+            <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Assign Today's Mission
+          </button>
+
+          <div id="subjects-${m.id}" class="mentee-subjects">
+            <div class="border-t border-line pt-3 space-y-2.5" id="subjects-content-${m.id}">
+              <p class="text-ink-faint text-xs">Loading subjects&hellip;</p>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function toggleSubjects(menteeId) {
+  const panel = document.getElementById(`subjects-${menteeId}`);
+  const chevron = document.getElementById(`chevron-${menteeId}`);
+  const isOpen = panel.classList.contains('open');
+
+  panel.classList.toggle('open');
+  chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+
+  if (isOpen) return;
+
+  const contentEl = document.getElementById(`subjects-content-${menteeId}`);
+  if (contentEl.dataset.loaded) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/mentor/mentees/${menteeId}/subjects`, { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.success || !data.subjects || !data.subjects.length) {
+      contentEl.innerHTML = `<p class="text-ink-faint text-xs">No subject data yet.</p>`;
+      return;
+    }
+    contentEl.innerHTML = data.subjects.map(s => `
+      <div class="flex justify-between items-center">
+        <span class="text-ink-soft text-xs">${s.name}</span>
+        <span class="text-ink text-xs font-mono font-semibold">${s.mastery ?? 0}%</span>
+      </div>
+    `).join('');
+    contentEl.dataset.loaded = 'true';
+  } catch (err) {
+    contentEl.innerHTML = `<p class="text-ink-faint text-xs">Couldn't load subjects.</p>`;
+  }
+}
+
+function renderEmpty() {
+  document.getElementById('menteeCountChip').textContent = '0 mentees';
+  document.getElementById('content').innerHTML = `
+    <div class="panel p-12 text-center reveal">
+      <i data-lucide="users" class="w-10 h-10 text-ink-faint mx-auto mb-3"></i>
+      <p class="text-ink-soft text-sm font-semibold mb-1">No mentees assigned yet.</p>
+      <p class="text-ink-faint text-xs">Once students are assigned to you, they'll show up here.</p>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+loadMe();
+loadMentees();
+lucide.createIcons();
+
+// ── Today's Mission editor (ported from mentor-dashboard.html) ──
+let currentMissionMenteeId = null;
+const MISSION_SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Revision'];
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function missionRowHTML(t){
+  const subj = t.subject || 'Biology';
+  const subjOptions = MISSION_SUBJECTS.map(s => `<option value="${s}" ${s === subj ? 'selected' : ''}>${s}</option>`).join('');
+  const priority = t.priority || 'medium';
+  return `
+    <div class="mission-row" style="display:flex;gap:6px;align-items:center;">
+      <select class="mission-subject" style="flex:0 0 96px;border:1px solid var(--line);border-radius:8px;padding:6px;font-size:12px">${subjOptions}</select>
+      <input class="mission-title" type="text" placeholder="Task title" value="${(t.title || '').replace(/"/g, '&quot;')}"
+             style="flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px"/>
+      <input class="mission-duration" type="text" placeholder="45 min" value="${(t.durationLabel || '').replace(/"/g, '&quot;')}"
+             style="flex:0 0 70px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px"/>
+      <select class="mission-priority" style="flex:0 0 86px;border:1px solid var(--line);border-radius:8px;padding:6px;font-size:12px">
+        <option value="high" ${priority==='high'?'selected':''}>High</option>
+        <option value="medium" ${priority==='medium'?'selected':''}>Medium</option>
+        <option value="low" ${priority==='low'?'selected':''}>Low</option>
+      </select>
+      <button onclick="this.closest('.mission-row').remove()" style="flex:0 0 24px;color:#DC2626;background:none;border:none;cursor:pointer">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>`;
+}
+
+function addMissionTaskRow(task){
+  const wrap = document.getElementById('missionTaskRows');
+  const div = document.createElement('div');
+  div.innerHTML = missionRowHTML(task || {});
+  wrap.appendChild(div.firstElementChild);
+  if (window.lucide) lucide.createIcons();
+}
+
+async function openMissionModal(menteeId, menteeName){
+  currentMissionMenteeId = menteeId;
+  document.getElementById('missionModalTitle').textContent = `Assign Today's Mission — ${menteeName}`;
+  document.getElementById('missionModalOverlay').classList.add('open');
+
+  const wrap = document.getElementById('missionTaskRows');
+  wrap.innerHTML = '<p class="text-ink-faint text-xs">Loading&hellip;</p>';
+  document.getElementById('missionEditorDate').textContent = '';
+  document.getElementById('missionSaveStatus').classList.add('hidden');
+
+  if (!token) { wrap.innerHTML = '<p class="text-ink-faint text-xs">Please sign in.</p>'; return; }
+
+  try {
+    const res = await fetch(`${API_BASE}/mentor/students/${menteeId}/mission`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    wrap.innerHTML = '';
+    if (res.ok && data.success) {
+      document.getElementById('missionEditorDate').textContent = data.date || '';
+      (data.tasks || []).forEach(t => addMissionTaskRow(t));
+      if (!data.tasks || !data.tasks.length) {
+        wrap.innerHTML = '<p class="text-ink-faint text-xs">No mission set yet — add a task below.</p>';
+      }
+    } else {
+      wrap.innerHTML = `<p class="text-ink-faint text-xs">${data.message || 'Could not load mission.'}</p>`;
+    }
+  } catch (err) {
+    wrap.innerHTML = '<p class="text-ink-faint text-xs">Network error loading mission.</p>';
+  }
+}
+
+function closeMissionModal(){
+  document.getElementById('missionModalOverlay').classList.remove('open');
+}
+
+async function saveMission(){
+  if (!currentMissionMenteeId) return;
+  const rows = document.querySelectorAll('#missionTaskRows .mission-row');
+  const tasks = Array.from(rows).map(row => ({
+    subject: row.querySelector('.mission-subject').value,
+    title: row.querySelector('.mission-title').value.trim(),
+    durationLabel: row.querySelector('.mission-duration').value.trim(),
+    priority: row.querySelector('.mission-priority').value,
+  })).filter(t => t.title);
+
+  const statusEl = document.getElementById('missionSaveStatus');
+  const btn = document.getElementById('saveMissionBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const res = await fetch(`${API_BASE}/mentor/students/${currentMissionMenteeId}/mission`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tasks }),
+    });
+    const data = await res.json();
+    statusEl.classList.remove('hidden');
+    if (data.success) {
+      statusEl.textContent = 'Mission saved — your student will see it now.';
+      statusEl.style.color = 'var(--teal-deep)';
+      showToast('✅ Mission saved');
+    } else {
+      statusEl.textContent = data.message || 'Failed to save mission.';
+      statusEl.style.color = '#DC2626';
+    }
+  } catch (err) {
+    statusEl.classList.remove('hidden');
+    statusEl.textContent = 'Network error saving mission.';
+    statusEl.style.color = '#DC2626';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Mission';
+  }
+}
+</script>
+
+<div id="missionModalOverlay" onclick="if(event.target===this) closeMissionModal()">
+  <div id="missionModal">
+    <div class="flex items-center justify-between p-5 border-b" style="border-color:var(--line)">
+      <h3 class="font-display text-lg text-ink" id="missionModalTitle">Assign Today's Mission</h3>
+      <button class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" style="color:var(--ink-soft)" onclick="closeMissionModal()">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="p-5 overflow-y-auto" style="flex:1">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="font-display text-base text-ink">Tasks</h4>
+        <span class="text-ink-faint text-xs" id="missionEditorDate"></span>
+      </div>
+      <div id="missionTaskRows" class="space-y-2 mb-3"></div>
+      <button class="btn-outline text-xs" onclick="addMissionTaskRow()" style="border:1px dashed var(--line);border-radius:10px;padding:7px 12px;color:var(--ink-soft);width:100%">
+        + Add Task
+      </button>
+      <button class="btn-primary w-full mt-3 py-2.5" id="saveMissionBtn" onclick="saveMission()">Save Mission</button>
+      <p class="text-ink-faint text-xs mt-2 hidden" id="missionSaveStatus"></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</body>
+</html>

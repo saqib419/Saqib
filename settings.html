@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: { extend: {
+      colors: {
+        navy:"#0A1424","navy-2":"#0F2038","navy-3":"#16304F",
+        teal:"#0FA89A","teal-2":"#33D9C8","teal-deep":"#0A6E64",
+        gold:"#B9924F","gold-soft":"rgba(185,146,79,0.12)",
+        mist:"#F5F7FA","mist-2":"#EEF2F6",
+        ink:"#0B1220","ink-soft":"#56657B","ink-faint":"#8B97A8",
+        line:"rgba(11,18,32,0.08)",
+      },
+      fontFamily: { display:["DM Serif Display","serif"], sans:["DM Sans","sans-serif"], mono:["JetBrains Mono","monospace"] },
+    }}
+  }
+</script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F; --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64; --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; }
+  *{box-sizing:border-box;}
+  body{ font-family:'DM Sans', sans-serif; background:var(--mist); color:var(--ink); min-height:100dvh; -webkit-font-smoothing:antialiased; }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .app-shell{display:flex; min-height:100dvh;}
+  .sidebar{
+    position:fixed; left:16px; top:16px; bottom:16px; width:260px; border-radius:24px;
+    background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%);
+    box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    display:flex; flex-direction:column; z-index:60;
+  }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); transition:transform .3s ease; } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:292px; flex:1; min-width:0; }
+  @media (max-width:1023px){ .main-content{ margin-left:0; } }
+  .nav-item{ display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:14px; color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500; cursor:pointer; transition:all .2s ease; margin:1px 12px; text-decoration:none; position:relative; }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+  .topbar{ position:sticky; top:16px; z-index:50; margin:0 16px 24px 0; border-radius:20px; background:rgba(255,255,255,0.78); backdrop-filter:blur(18px) saturate(160%); border:1px solid rgba(255,255,255,0.7); box-shadow:0 8px 28px -16px rgba(11,18,32,0.18); }
+  .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:0 1px 2px rgba(11,18,32,0.04); }
+  .btn-primary{ background:linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%); color:#fff; border:none; border-radius:14px; font-weight:700; box-shadow:0 10px 24px -8px rgba(15,168,154,0.55); transition:all .2s ease; }
+  .btn-primary:hover{ transform:translateY(-2px); }
+  .btn-primary:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+  .field-label{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:6px; }
+  .field-input{ width:100%; padding:10px 14px; border-radius:12px; background:var(--mist); border:1px solid var(--line); font-size:14px; }
+  .field-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,168,154,0.12); }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); }
+  .toggle-row:last-child{ border-bottom:none; }
+  .switch{ position:relative; width:42px; height:24px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; cursor:pointer; inset:0; background:rgba(11,18,32,0.15); border-radius:999px; transition:.2s; }
+  .slider::before{ content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider{ background:var(--teal); }
+  input:checked + .slider::before{ transform:translateX(18px); }
+  .avatar-circle{ width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--teal-deep)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; font-family:'DM Serif Display',serif; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-5 pt-5 pb-4">
+      <p class="font-display text-white text-[17px] leading-none">MedClarivo</p>
+      <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1">Elite</p>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-1">
+      <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a href="progress.html" class="nav-item"><i data-lucide="trending-up"></i><span>Progress</span></a>
+      <a href="#" class="nav-item"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a href="analytics.html" class="nav-item"><i data-lucide="bar-chart-3"></i><span>Analytics</span></a>
+      <a href="my-mentor.html" class="nav-item"><i data-lucide="users"></i><span>My Mentor</span></a>
+      <a href="student-sessions.html" class="nav-item"><i data-lucide="video"></i><span>Sessions</span></a>
+      <a href="student-messages.html" class="nav-item"><i data-lucide="mail"></i><span>Messages</span></a>
+      <a href="dashboard.html#doubtSection" class="nav-item"><i data-lucide="message-circle"></i><span>Doubt Forum</span></a>
+      <a href="raise-ticket.html" class="nav-item"><i data-lucide="shield-alert"></i><span>Raise a Ticket</span></a>
+      <a href="dashboard.html#achievementsSection" class="nav-item"><i data-lucide="award"></i><span>Achievements</span></a>
+      <a href="settings.html" class="nav-item active"><i data-lucide="settings"></i><span>Settings</span></a>
+    </nav>
+    <a href="index.html" class="nav-item mb-4 text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+      <i data-lucide="log-out"></i><span>Sign Out</span>
+    </a>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar mx-4 mt-4 lg:mx-6 h-16 flex items-center justify-between px-4 md:px-5">
+      <p class="font-display text-lg text-ink">Settings</p>
+      <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu"></i></button>
+    </header>
+
+    <main class="px-4 md:px-6 pb-16 max-w-3xl mx-auto pt-6 space-y-6">
+
+      <!-- Profile -->
+      <section class="panel p-6 md:p-7">
+        <h2 class="font-display text-xl text-ink mb-1">Profile</h2>
+        <p class="text-ink-faint text-sm mb-6">Your basic account information.</p>
+
+        <div class="flex items-center gap-4 mb-6">
+          <div class="avatar-circle" id="avatarPreview">?</div>
+          <div class="flex-1">
+            <label class="field-label">Avatar URL</label>
+            <input id="avatarInput" type="text" placeholder="https://…" class="field-input" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="field-label">Name</label>
+            <input id="nameInput" type="text" class="field-input" />
+          </div>
+          <div>
+            <label class="field-label">Phone</label>
+            <input id="phoneInput" type="text" class="field-input" />
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="field-label">Email</label>
+          <input id="emailInput" type="email" class="field-input" />
+        </div>
+
+        <button id="profileSaveBtn" onclick="saveProfile()" class="btn-primary px-6 py-2.5 text-sm">Save Profile</button>
+      </section>
+
+      <!-- Password -->
+      <section class="panel p-6 md:p-7">
+        <h2 class="font-display text-xl text-ink mb-1">Password</h2>
+        <p class="text-ink-faint text-sm mb-6">Change your account password.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="field-label">Current Password</label>
+            <input id="currentPasswordInput" type="password" class="field-input" />
+          </div>
+          <div>
+            <label class="field-label">New Password</label>
+            <input id="newPasswordInput" type="password" class="field-input" />
+          </div>
+        </div>
+        <button id="passwordSaveBtn" onclick="savePassword()" class="btn-primary px-6 py-2.5 text-sm">Update Password</button>
+      </section>
+
+      <!-- Notifications -->
+      <section class="panel p-6 md:p-7">
+        <h2 class="font-display text-xl text-ink mb-1">Notifications</h2>
+        <p class="text-ink-faint text-sm mb-4">Choose what you want to hear about.</p>
+
+        <div class="toggle-row">
+          <div>
+            <p class="text-ink font-semibold text-sm">Email Updates</p>
+            <p class="text-ink-faint text-xs">Product news and account updates</p>
+          </div>
+          <label class="switch"><input type="checkbox" id="prefEmailUpdates" onchange="saveNotifications()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <p class="text-ink font-semibold text-sm">Session Reminders</p>
+            <p class="text-ink-faint text-xs">Reminders before mentor sessions</p>
+          </div>
+          <label class="switch"><input type="checkbox" id="prefSessionReminders" onchange="saveNotifications()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <p class="text-ink font-semibold text-sm">Doubt Forum Replies</p>
+            <p class="text-ink-faint text-xs">When someone replies to your doubt</p>
+          </div>
+          <label class="switch"><input type="checkbox" id="prefForumReplies" onchange="saveNotifications()"><span class="slider"></span></label>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;background:var(--navy);color:#fff;opacity:0;transition:.3s;z-index:999;"></div>
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  const token = localStorage.getItem('mc_token');
+  if (!token) window.location.href = 'index.html';
+
+  lucide.createIcons();
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(80px)'; }, 2800);
+  }
+
+  function initials(name){
+    if (!name) return '?';
+    return name.trim().split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+  }
+
+  async function loadSettings(){
+    try {
+      const res = await fetch(`${API_BASE}/settings`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok || !data.success) { showToast('Could not load settings.'); return; }
+      const u = data.user;
+      document.getElementById('nameInput').value = u.name || '';
+      document.getElementById('emailInput').value = u.email || '';
+      document.getElementById('phoneInput').value = u.phone || '';
+      document.getElementById('avatarInput').value = u.avatar || '';
+      document.getElementById('avatarPreview').textContent = initials(u.name);
+
+      const prefs = u.notificationPrefs || {};
+      document.getElementById('prefEmailUpdates').checked = prefs.emailUpdates ?? true;
+      document.getElementById('prefSessionReminders').checked = prefs.sessionReminders ?? true;
+      document.getElementById('prefForumReplies').checked = prefs.forumReplies ?? true;
+    } catch (err) {
+      console.error(err);
+      showToast('Network error loading settings.');
+    }
+  }
+
+  async function saveProfile(){
+    const btn = document.getElementById('profileSaveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const body = {
+        name: document.getElementById('nameInput').value,
+        email: document.getElementById('emailInput').value,
+        phone: document.getElementById('phoneInput').value,
+      };
+      const res = await fetch(`${API_BASE}/settings/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('mc_user', JSON.stringify(data.user));
+        showToast('Profile updated.');
+      } else {
+        showToast(data.message || 'Could not update profile.');
+      }
+    } catch (err) {
+      showToast('Network error.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Profile';
+    }
+  }
+
+  // Avatar saved separately via its own endpoint, on blur
+  document.getElementById('avatarInput').addEventListener('blur', async () => {
+    const avatarUrl = document.getElementById('avatarInput').value.trim();
+    if (!avatarUrl) return;
+    try {
+      const res = await fetch(`${API_BASE}/settings/avatar`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ avatarUrl }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('mc_user', JSON.stringify(data.user));
+        showToast('Avatar updated.');
+      }
+    } catch (err) { console.error(err); }
+  });
+
+  async function savePassword(){
+    const btn = document.getElementById('passwordSaveBtn');
+    const currentPassword = document.getElementById('currentPasswordInput').value;
+    const newPassword = document.getElementById('newPasswordInput').value;
+    if (!currentPassword || !newPassword) { showToast('Fill in both password fields.'); return; }
+
+    btn.disabled = true; btn.textContent = 'Updating…';
+    try {
+      const res = await fetch(`${API_BASE}/settings/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('Password updated.');
+        document.getElementById('currentPasswordInput').value = '';
+        document.getElementById('newPasswordInput').value = '';
+      } else {
+        showToast(data.message || 'Could not update password.');
+      }
+    } catch (err) {
+      showToast('Network error.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Update Password';
+    }
+  }
+
+  async function saveNotifications(){
+    try {
+      const body = {
+        emailUpdates: document.getElementById('prefEmailUpdates').checked,
+        sessionReminders: document.getElementById('prefSessionReminders').checked,
+        forumReplies: document.getElementById('prefForumReplies').checked,
+      };
+      const res = await fetch(`${API_BASE}/settings/notifications`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) showToast('Preferences saved.');
+    } catch (err) { console.error(err); }
+  }
+
+  loadSettings();
+</script>
+</body>
+</html>

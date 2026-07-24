@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<title>MedClarivo Elite | My Sessions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F; --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64; --gold:#B9924F; --mist:#F5F7FA; --mist-2:#EEF2F6; --ink:#0B1220; --ink-soft:#56657B; --ink-faint:#8B97A8; --line:rgba(11,18,32,0.08); }
+  *{box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:260px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;transition:transform .35s cubic-bezier(.4,0,.2,1), width .3s ease;overflow:hidden;}
+  .sidebar.collapsed{width:84px;}
+  .sidebar.collapsed .hide-on-collapse{display:none;}
+  .sidebar.collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0;}
+  .sidebar.collapsed .nav-item .nav-label{display:none;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:292px;flex:1;min-width:0;transition:margin-left .3s ease;}
+  .main-content.collapsed{margin-left:116px;}
+  @media(max-width:1023px){.main-content,.main-content.collapsed{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;position:relative;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;transform:translateX(2px);}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--teal-2),var(--teal));}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .avatar-ring{border:2px solid var(--teal);padding:2px;border-radius:999px;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-green{background:rgba(5,150,105,0.1);color:#059669;}
+  .chip-red{background:rgba(220,38,38,0.08);color:#DC2626;}
+  .chip-grey{background:var(--mist-2);color:var(--ink-soft);}
+  .session-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;transition:box-shadow .15s,transform .15s;}
+  .session-card:hover{box-shadow:0 6px 20px rgba(11,18,32,0.07);transform:translateY(-1px);}
+  .session-card.upcoming{border-left:3px solid var(--teal);}
+  .session-card.cancelled{opacity:0.5;}
+  .cat-academic{background:rgba(15,168,154,0.1);color:var(--teal-deep);}
+  .cat-doubt{background:rgba(59,130,246,0.1);color:#2563EB;}
+  .cat-exam{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .cat-behavioral{background:rgba(220,38,38,0.08);color:#DC2626;}
+  .tab-btn{padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;transition:all .15s;color:var(--ink-soft);cursor:pointer;border:none;background:none;}
+  .tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(11,18,32,0.08);}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,0.28);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.error{background:#991B1B;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="flex items-center justify-between px-5 pt-6 pb-5">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">
+          <i data-lucide="cross" class="w-[18px] h-[18px] text-white"></i>
+        </div>
+        <div class="hide-on-collapse min-w-0">
+          <p class="font-display text-white text-[17px] leading-none tracking-tight">MedClarivo</p>
+          <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1">Elite</p>
+        </div>
+      </div>
+      <button class="hide-on-collapse text-white/40 hover:text-white hover:bg-white/8 rounded-lg p-1.5" id="collapseBtn" onclick="toggleCollapse()">
+        <i data-lucide="panel-left-close" class="w-[17px] h-[17px]"></i>
+      </button>
+    </div>
+
+    <div class="mx-3 mb-3 p-2.5 rounded-2xl bg-white/5 flex items-center gap-3">
+      <div class="avatar-ring flex-shrink-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs font-display" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));" id="sidebarAvatar">S</div>
+      </div>
+      <div class="hide-on-collapse flex-1 min-w-0">
+        <p class="text-white font-semibold text-[13px] truncate" id="sidebarName">—</p>
+        <p class="text-white/35 text-[10.5px] truncate" id="sidebarExam">Student</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto no-scrollbar py-1">
+      <p class="hide-on-collapse px-6 py-2 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Main</p>
+      <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></a>
+      <a href="progress.html" class="nav-item"><i data-lucide="trending-up"></i><span class="nav-label">Progress</span></a>
+      <a href="#" class="nav-item"><i data-lucide="library"></i><span class="nav-label flex-1">Content Library</span><span class="hide-on-collapse chip chip-teal" style="padding:1px 7px;font-size:9.5px">Soon</span></a>
+      <a href="analytics.html" class="nav-item"><i data-lucide="bar-chart-3"></i><span class="nav-label">Analytics</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Mentorship</p>
+      <a href="my-mentor.html" class="nav-item"><i data-lucide="users"></i><span class="nav-label">My Mentor</span></a>
+      <a href="student-sessions.html" class="nav-item active"><i data-lucide="video"></i><span class="nav-label">Sessions</span></a>
+      <a href="student-messages.html" class="nav-item"><i data-lucide="message-circle"></i><span class="nav-label">Messages</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Support</p>
+      <a href="raise-ticket.html" class="nav-item"><i data-lucide="shield-alert"></i><span class="nav-label">Raise a Ticket</span></a>
+
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Account</p>
+      <a href="settings.html" class="nav-item"><i data-lucide="settings"></i><span class="nav-label">Settings</span></a>
+    </nav>
+
+    <a href="#" id="signOutBtn" class="nav-item mb-4 mx-3" style="color:rgba(252,165,165,0.7);">
+      <i data-lucide="log-out"></i><span class="nav-label">Sign Out</span>
+    </a>
+  </aside>
+
+  <main class="main-content" id="mainContent">
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <p style="font-weight:600;font-size:14px;">My Sessions</p>
+          <p style="color:var(--ink-faint);font-size:12px;">Your upcoming and past mentor sessions</p>
+        </div>
+      </div>
+      <a href="student-messages.html" class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl" style="background:var(--navy);color:white;">
+        <i data-lucide="message-circle" class="w-4 h-4"></i> Message Mentor
+      </a>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-5xl mx-auto space-y-6">
+
+      <!-- Next session hero -->
+      <div id="nextSessionHero" class="hidden">
+        <div class="rounded-2xl p-6 text-white relative overflow-hidden" style="background:linear-gradient(135deg,var(--navy-2) 0%,var(--navy-3) 100%);">
+          <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full" style="background:rgba(15,168,154,0.12);"></div>
+          <div class="relative flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p style="color:var(--teal-2);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px;">Next Session</p>
+              <h2 style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;" id="nextTitle">—</h2>
+              <p style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:12px;" id="nextMentor">—</p>
+              <div class="flex items-center gap-3 flex-wrap">
+                <span class="flex items-center gap-1.5" style="color:rgba(255,255,255,0.8);font-size:14px;">
+                  <i data-lucide="clock" class="w-4 h-4"></i>
+                  <span id="nextTime">—</span>
+                </span>
+                <span class="chip" style="background:rgba(15,168,154,0.2);color:#7FE9DD;" id="nextCat">—</span>
+              </div>
+            </div>
+            <div id="nextJoinBtn" class="hidden">
+              <a id="nextJoinLink" href="#" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm" style="background:var(--teal);color:white;">
+                <i data-lucide="video" class="w-4 h-4"></i> Join Session
+              </a>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 flex items-center gap-2" style="border-top:1px solid rgba(255,255,255,0.08);">
+            <i data-lucide="info" class="w-3.5 h-3.5" style="color:rgba(255,255,255,0.4);"></i>
+            <p style="color:rgba(255,255,255,0.4);font-size:12px;">Your mentor will share the meeting link before the session starts.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="panel p-5 text-center">
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink mb-1" id="statTotal">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;">Total sessions</p>
+        </div>
+        <div class="panel p-5 text-center">
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--teal);" class="mb-1" id="statUpcoming">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;">Upcoming</p>
+        </div>
+        <div class="panel p-5 text-center">
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink mb-1" id="statCompleted">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;">Completed</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex items-center gap-1 p-1 rounded-xl w-fit" style="background:var(--mist-2);">
+        <button class="tab-btn active" id="tabUpcoming" onclick="switchTab('upcoming')">Upcoming</button>
+        <button class="tab-btn" id="tabCompleted" onclick="switchTab('completed')">Completed</button>
+        <button class="tab-btn" id="tabAll" onclick="switchTab('all')">All</button>
+      </div>
+
+      <div id="panelUpcoming"><div id="upcomingList" class="space-y-4"><div class="panel p-8 text-center"><p style="color:var(--ink-faint);font-size:14px;">Loading...</p></div></div></div>
+      <div id="panelCompleted" class="hidden"><div id="completedList" class="space-y-4"><div class="panel p-8 text-center"><p style="color:var(--ink-faint);font-size:14px;">Loading...</p></div></div></div>
+      <div id="panelAll" class="hidden"><div id="allList" class="space-y-4"><div class="panel p-8 text-center"><p style="color:var(--ink-faint);font-size:14px;">Loading...</p></div></div></div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+let allSessions = [];
+
+function toggleCollapse(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('mainContent').classList.toggle('collapsed');
+}
+function getToken() { return localStorage.getItem('mc_token'); }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function switchTab(tab) {
+  ['Upcoming','Completed','All'].forEach(t => {
+    document.getElementById(`panel${t}`).classList.toggle('hidden', t.toLowerCase() !== tab);
+    document.getElementById(`tab${t}`).classList.toggle('active', t.toLowerCase() === tab);
+  });
+}
+
+function catLabel(c) { return {academic:'Academic',doubt:'Doubt Clearing',exam:'Exam Prep',behavioral:'Behavioral'}[c]||c; }
+function catCls(c) { return {academic:'cat-academic',doubt:'cat-doubt',exam:'cat-exam',behavioral:'cat-behavioral'}[c]||'chip-grey'; }
+
+function fmt(dateStr) {
+  const d = new Date(dateStr), now = new Date();
+  const diff = d - now, days = Math.floor(diff/86400000);
+  const time = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const date = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  if(days===0&&diff>0) return `Today · ${time}`;
+  if(days===1) return `Tomorrow · ${time}`;
+  return `${date} · ${time}`;
+}
+
+function until(dateStr) {
+  const diff = new Date(dateStr)-new Date();
+  if(diff<0) return 'Now';
+  const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000);
+  if(h===0) return `in ${m}m`;
+  if(h<24) return `in ${h}h ${m}m`;
+  return `in ${Math.floor(h/24)}d`;
+}
+
+function cardHTML(s, showStatus=false) {
+  const mentor = s.mentor||{};
+  const mName = mentor.name||mentor.email||'Your Mentor';
+  const isUp = s.status==='scheduled';
+  const isDone = s.status==='completed';
+  const isCancelled = s.status==='cancelled';
+  const soon = isUp && (new Date(s.startTime)-new Date()) <= 15*60000 && (new Date(s.startTime)-new Date()) >= -5*60000;
+  return `
+    <div class="session-card ${isUp?'upcoming':''} ${isCancelled?'cancelled':''}">
+      <div class="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 text-white" style="background:var(--navy);">${mName.charAt(0).toUpperCase()}</div>
+          <div>
+            <p style="font-weight:600;font-size:14px;">${mName}</p>
+            <p style="color:var(--ink-faint);font-size:12px;">${mentor.email||''}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="chip ${catCls(s.category)}" style="font-size:10px;">${catLabel(s.category)}</span>
+          ${showStatus?`<span class="chip ${isDone?'chip-green':isCancelled?'chip-red':'chip-teal'}" style="font-size:10px;">${s.status.charAt(0).toUpperCase()+s.status.slice(1)}</span>`:''}
+          ${soon?'<span class="chip chip-green" style="font-size:10px;">Starting Soon!</span>':''}
+        </div>
+      </div>
+      ${s.topic?`<p style="font-size:14px;font-weight:500;margin-bottom:12px;">${s.topic}</p>`:''}
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="clock" class="w-3.5 h-3.5" style="color:var(--ink-faint);"></i>
+        <p style="font-size:12px;color:var(--ink-soft);">${fmt(s.startTime)}</p>
+        ${isUp?`<span style="font-size:12px;font-weight:600;color:var(--teal);">${until(s.startTime)}</span>`:''}
+      </div>
+      ${isUp?`
+        <div class="flex gap-2">
+          ${s.meetingLink?`
+            <a href="${s.meetingLink}" target="_blank" class="flex-1 py-2.5 text-white text-xs font-bold rounded-xl text-center flex items-center justify-center gap-1.5" style="background:var(--teal);">
+              <i data-lucide="video" class="w-3.5 h-3.5"></i> Join Session
+            </a>`:`
+            <div class="flex-1 py-2.5 text-xs font-bold rounded-xl text-center flex items-center justify-center gap-1.5 cursor-not-allowed" style="background:var(--mist-2);color:var(--ink-faint);">
+              <i data-lucide="video-off" class="w-3.5 h-3.5"></i> Link Not Added Yet
+            </div>`}
+          <a href="student-messages.html" class="px-4 py-2.5 border text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-mist" style="border-color:var(--line);color:var(--ink-soft);">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Message
+          </a>
+        </div>`:''}
+      ${isDone&&s.notes?`
+        <div class="mt-3 p-3 rounded-xl" style="background:var(--mist);border:1px solid var(--line);">
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);margin-bottom:4px;">Mentor Notes</p>
+          <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">${s.notes}</p>
+        </div>`:''}
+      ${isCancelled?`<p style="color:#DC2626;font-size:12px;margin-top:8px;">This session was cancelled.</p>`:''}
+    </div>`;
+}
+
+async function init() {
+  const token = getToken();
+  if(!token){window.location.href='index.html';return;}
+  try {
+    const res = await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    const data = await res.json();
+    if(res.ok&&data.success){
+      const u=data.user;
+      document.getElementById('sidebarName').textContent=u.name||u.email;
+      document.getElementById('sidebarAvatar').textContent=(u.name||u.email).charAt(0).toUpperCase();
+      document.getElementById('sidebarExam').textContent=u.onboarding?.exam||'Student';
+    } else {window.location.href='index.html';return;}
+  } catch(e){window.location.href='index.html';return;}
+  await loadSessions();
+}
+
+async function loadSessions() {
+  try {
+    const res = await fetch(`${API}/student/mentor/my-mentor`,{headers:{Authorization:`Bearer ${getToken()}`}});
+    const data = await res.json();
+    if(res.ok&&data.success){
+      const upcoming = (data.upcomingSessions||[]).map(s=>({...s, status:'scheduled'}));
+      const history = (data.sessionHistory||[]).map(s=>({...s, status: s.status||'completed'}));
+      allSessions=[...upcoming,...history];
+      renderAll();
+    } else if(res.status===404){
+      allSessions=[];
+      renderAll();
+    } else {
+      showToast(data.message||'Failed to load sessions.','error');
+    }
+  } catch(e){ showToast('Cannot reach server.','error'); }
+}
+
+function renderAll() {
+  const now = new Date();
+  const upcoming = allSessions.filter(s=>s.status==='scheduled'&&new Date(s.startTime)>=new Date(now-5*60000));
+  const completed = allSessions.filter(s=>s.status==='completed');
+  const sorted = [...allSessions].sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
+
+  document.getElementById('statTotal').textContent=allSessions.length;
+  document.getElementById('statUpcoming').textContent=upcoming.length;
+  document.getElementById('statCompleted').textContent=completed.length;
+
+  if(upcoming.length){
+    const next=upcoming.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime))[0];
+    const m=next.mentor||{};
+    document.getElementById('nextTitle').textContent=next.topic||catLabel(next.category)+' Session';
+    document.getElementById('nextMentor').textContent=`with ${m.name||m.email||'your mentor'}`;
+    document.getElementById('nextTime').textContent=fmt(next.startTime);
+    document.getElementById('nextCat').textContent=catLabel(next.category);
+    document.getElementById('nextSessionHero').classList.remove('hidden');
+    if(next.meetingLink){
+      document.getElementById('nextJoinLink').href=next.meetingLink;
+      document.getElementById('nextJoinBtn').classList.remove('hidden');
+    }
+  }
+
+  const upEl=document.getElementById('upcomingList');
+  upEl.innerHTML=upcoming.length
+    ?upcoming.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime)).map(s=>cardHTML(s)).join('')
+    :`<div class="panel p-10 text-center">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(15,168,154,0.1);">
+          <i data-lucide="calendar-off" class="w-7 h-7" style="color:var(--teal);"></i>
+        </div>
+        <p style="font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:8px;">No upcoming sessions</p>
+        <p style="color:var(--ink-faint);font-size:14px;margin-bottom:20px;">Your mentor schedules sessions with you. Send them a message to request one.</p>
+        <a href="student-messages.html" class="inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl" style="background:var(--navy);">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Message Your Mentor
+        </a>
+      </div>`;
+
+  const coEl=document.getElementById('completedList');
+  coEl.innerHTML=completed.length
+    ?completed.sort((a,b)=>new Date(b.startTime)-new Date(a.startTime)).map(s=>cardHTML(s,true)).join('')
+    :`<div class="panel p-8 text-center"><p style="color:var(--ink-faint);font-size:14px;">No completed sessions yet.</p></div>`;
+
+  const allEl=document.getElementById('allList');
+  allEl.innerHTML=sorted.length
+    ?sorted.map(s=>cardHTML(s,true)).join('')
+    :`<div class="panel p-8 text-center"><p style="color:var(--ink-faint);font-size:14px;">No sessions yet.</p></div>`;
+
+  lucide.createIcons();
+}
+
+document.getElementById('signOutBtn').addEventListener('click',e=>{
+  e.preventDefault();
+  localStorage.removeItem('mc_token');
+  localStorage.removeItem('mc_user');
+  window.location.href='index.html';
+});
+
+window.addEventListener('load',()=>{lucide.createIcons();init();});
+</script>
+</body>
+</html>

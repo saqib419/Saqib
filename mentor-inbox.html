@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite | General Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy: "#0A1424", "navy-2": "#0F2038", "navy-3": "#16304F",
+          teal: "#0FA89A", "teal-2": "#33D9C8", "teal-deep": "#0A6E64",
+          gold: "#B9924F", "gold-soft": "rgba(185,146,79,0.12)",
+          mist: "#F5F7FA", "mist-2": "#EEF2F6",
+          ink: "#0B1220", "ink-soft": "#56657B", "ink-faint": "#8B97A8",
+          line: "rgba(11,18,32,0.08)",
+        },
+        fontFamily: { display: ["DM Serif Display", "serif"], sans: ["DM Sans", "sans-serif"], mono: ["JetBrains Mono", "monospace"] },
+      }
+    }
+  }
+</script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F; --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64; --gold:#B9924F; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ font-family:'DM Sans', sans-serif; background:var(--mist); color:var(--ink); -webkit-font-smoothing:antialiased; min-height:100dvh; }
+  .font-display{font-family:'DM Serif Display', serif;}
+  .font-mono{font-family:'JetBrains Mono', monospace;}
+  .app-shell{display:flex; min-height:100dvh;}
+  .sidebar{ position:fixed; left:16px; top:16px; bottom:16px; width:260px; border-radius:24px; background:linear-gradient(174deg, var(--navy-2) 0%, var(--navy) 78%); box-shadow:0 20px 50px -20px rgba(10,20,36,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset; display:flex; flex-direction:column; z-index:60; transition:transform .35s cubic-bezier(.4,0,.2,1), width .3s ease; overflow:hidden; }
+  .sidebar.collapsed{ width:84px; }
+  .sidebar.collapsed .hide-on-collapse{ display:none; }
+  .sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; }
+  .sidebar.collapsed .nav-item .nav-label{ display:none; }
+  @media (max-width:1023px){ .sidebar{ transform:translateX(-130%); } .sidebar.open{ transform:translateX(0); } }
+  .main-content{ margin-left:292px; flex:1; min-width:0; transition:margin-left .3s ease; }
+  .main-content.collapsed{ margin-left:116px; }
+  @media (max-width:1023px){ .main-content, .main-content.collapsed{ margin-left:0; } }
+  .nav-item{ display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:14px; color:rgba(255,255,255,0.52); font-size:13.5px; font-weight:500; cursor:pointer; transition:all .2s ease; margin:1px 12px; text-decoration:none; position:relative; }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; transform:translateX(2px); }
+  .nav-item.active{ background:rgba(15,168,154,0.16); color:#7FE9DD; }
+  .nav-item.active::before{ content:''; position:absolute; left:-12px; top:50%; transform:translateY(-50%); width:3px; height:18px; border-radius:3px; background:linear-gradient(180deg, var(--teal-2), var(--teal)); }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+  .topbar{ position:sticky; top:16px; z-index:50; margin:0 16px 0 0; border-radius:20px; background:rgba(255,255,255,0.78); backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%); border:1px solid rgba(255,255,255,0.7); box-shadow:0 8px 28px -16px rgba(11,18,32,0.18); }
+  .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:0 1px 2px rgba(11,18,32,0.04), 0 12px 28px -18px rgba(11,18,32,0.10); }
+  .btn-primary{ background:linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%); color:#fff; border:none; border-radius:14px; font-weight:700; box-shadow:0 10px 24px -8px rgba(15,168,154,0.55); transition:all .2s cubic-bezier(.4,0,.2,1); }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 16px 32px -8px rgba(15,168,154,0.6); }
+  .btn-ghost-icon{ width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); transition:all .18s ease; cursor:pointer; }
+  .btn-ghost-icon:hover{ background:rgba(11,18,32,0.05); color:var(--ink); }
+  .chip{ display:inline-flex; align-items:center; gap:4px; border-radius:999px; font-size:11px; font-weight:700; padding:3px 10px; letter-spacing:.02em; }
+  .chip-teal{ background:rgba(15,168,154,0.12); color:var(--teal-deep); }
+  .chip-navy{ background:rgba(11,18,32,0.06); color:var(--ink-soft); }
+  .avatar-ring{ border:2px solid var(--teal); padding:2px; border-radius:999px; }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+  .overlay{ position:fixed; inset:0; background:rgba(7,12,22,0.45); backdrop-filter:blur(2px); z-index:55; display:none; }
+  .overlay.open{ display:block; }
+  @keyframes pulse-dot{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  .pulse-dot{ animation:pulse-dot 1.8s ease-in-out infinite; }
+  a:focus-visible, button:focus-visible, input:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; border-radius:8px; }
+  [data-tip]{ position:relative; }
+  .sidebar.collapsed [data-tip]:hover::after{ content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-size:11px; white-space:nowrap; padding:5px 9px; border-radius:8px; pointer-events:none; z-index:99; font-weight:500; }
+
+  .contact-row{ display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:14px; cursor:pointer; transition:background .15s ease; }
+  .contact-row:hover{ background:var(--mist); }
+  .contact-row.active{ background:rgba(15,168,154,0.08); }
+  .contact-avatar{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; color:#fff; }
+  .section-label{ font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); padding:14px 14px 6px; }
+
+  .bubble{ max-width:72%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.5; }
+  .bubble-mine{ background:linear-gradient(135deg,var(--teal),var(--teal-deep)); color:#fff; border-bottom-right-radius:4px; margin-left:auto; }
+  .bubble-theirs{ background:var(--mist); color:var(--ink); border-bottom-left-radius:4px; }
+</style>
+</head>
+<body class="antialiased">
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-5 pt-5 pb-4 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">
+          <i data-lucide="cross" class="w-[18px] h-[18px] text-white"></i>
+        </div>
+        <div class="hide-on-collapse min-w-0">
+          <p class="font-display text-white text-[17px] leading-none tracking-tight">MedClarivo</p>
+          <p class="text-[9.5px] text-teal-2 font-bold tracking-[0.18em] uppercase mt-1">Mentor</p>
+        </div>
+      </div>
+      <button class="hide-on-collapse btn-ghost-icon text-white/40 hover:text-white hover:bg-white/8" onclick="toggleCollapse()" data-tip="Collapse">
+        <i data-lucide="panel-left-close" class="w-[17px] h-[17px]"></i>
+      </button>
+    </div>
+    <div class="mx-3 mb-3 p-2.5 rounded-2xl bg-white/5 flex items-center gap-3">
+      <div class="avatar-ring flex-shrink-0">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs font-display" id="sidebarAvatar" style="background:linear-gradient(135deg,var(--teal),var(--teal-deep));">A</div>
+      </div>
+      <div class="hide-on-collapse flex-1 min-w-0">
+        <p class="text-white font-semibold text-[13px] truncate" id="sidebarName">Mentor</p>
+        <p class="text-white/35 text-[10.5px] truncate" id="sidebarCredentials">Mentor</p>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto no-scrollbar py-1">
+      <p class="hide-on-collapse px-6 py-2 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Main</p>
+      <a href="mentor-dashboard.html" class="nav-item" data-tip="Dashboard"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></a>
+      <a href="mentor-mentees.html" class="nav-item" data-tip="My Mentees"><i data-lucide="users"></i><span class="nav-label">My Mentees</span></a>
+      <a href="mentor-requests.html" class="nav-item" data-tip="Requests"><i data-lucide="user-check"></i><span class="nav-label flex-1">Requests</span></a>
+      <a href="mentor-dashboard.html" class="nav-item" data-tip="Analytics"><i data-lucide="bar-chart-3"></i><span class="nav-label">Analytics</span></a>
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Mentorship</p>
+      <a href="mentor-sessions.html" class="nav-item" data-tip="Sessions"><i data-lucide="video"></i><span class="nav-label">Sessions</span></a>
+      <a href="mentor-dashboard.html#doubtSection" class="nav-item" data-tip="Doubt Forum"><i data-lucide="message-circle"></i><span class="nav-label flex-1">Doubt Forum</span></a>
+      <a href="mentor-inbox.html" class="nav-item active" data-tip="General Messages"><i data-lucide="inbox"></i><span class="nav-label">General Messages</span></a>
+      <p class="hide-on-collapse px-6 py-2 mt-3 text-[10px] text-white/25 uppercase tracking-[0.16em] font-bold">Account</p>
+      <a href="mentor-dashboard.html" class="nav-item" data-tip="Recognition"><i data-lucide="award"></i><span class="nav-label">Recognition</span></a>
+      <a href="mentor-dashboard.html" class="nav-item" data-tip="Settings"><i data-lucide="settings"></i><span class="nav-label">Settings</span></a>
+    </nav>
+    <button id="signOutBtn" class="nav-item mb-4 text-red-300/70 hover:text-red-300 hover:bg-red-500/10" data-tip="Sign Out" style="background:none;border:none;cursor:pointer;font:inherit;text-align:left;">
+      <i data-lucide="log-out"></i><span class="nav-label">Sign Out</span>
+    </button>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <header class="topbar mx-4 mt-4 lg:mx-6 lg:mt-4 h-16 flex items-center justify-between px-4 md:px-5">
+      <div class="flex items-center gap-2">
+        <button class="lg:hidden btn-ghost-icon" onclick="openSidebar()"><i data-lucide="menu" class="w-5 h-5"></i></button>
+        <p class="font-display text-lg text-ink hidden lg:block">General Messages</p>
+      </div>
+      <div class="avatar-ring cursor-pointer">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-[12px] font-display" id="topbarAvatar" style="background:var(--navy)">A</div>
+      </div>
+    </header>
+
+    <main class="px-4 md:px-6 pb-28 lg:pb-10">
+      <div class="max-w-6xl mx-auto pt-6">
+        <div class="panel overflow-hidden" style="height: calc(100dvh - 140px); display:flex;">
+
+          <!-- Contact list: mentees + admin team, one inbox -->
+          <div style="width:300px; flex-shrink:0; border-right:1px solid var(--line); display:flex; flex-direction:column;">
+            <div class="p-4 border-b" style="border-color:var(--line)">
+              <input id="contactSearch" type="text" placeholder="Search…" class="w-full px-3 py-2 rounded-xl bg-mist border border-line text-sm focus:outline-none focus:ring-2 focus:ring-teal/30" />
+            </div>
+            <div id="contactList" class="flex-1 overflow-y-auto p-2">
+              <p class="text-ink-faint text-xs text-center py-6">Loading contacts&hellip;</p>
+            </div>
+          </div>
+
+          <!-- Conversation -->
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+            <div id="convHeader" class="p-4 border-b flex items-center gap-3" style="border-color:var(--line); display:none;">
+              <div class="contact-avatar" id="convAvatar" style="background:var(--navy)">—</div>
+              <div>
+                <p class="font-semibold text-ink text-sm" id="convName">—</p>
+                <p class="text-ink-faint text-xs" id="convMeta">—</p>
+              </div>
+            </div>
+            <div id="messagesScroll" class="flex-1 overflow-y-auto p-5 space-y-3">
+              <div class="h-full flex items-center justify-center text-ink-faint text-sm">Select a conversation to get started</div>
+            </div>
+            <div id="composer" class="p-4 border-t" style="border-color:var(--line); display:none;">
+              <div id="sendError" class="hidden text-red-600 text-xs font-medium mb-2"></div>
+              <div class="flex items-center gap-2">
+                <input id="messageInput" type="text" maxlength="2000" placeholder="Type a message…"
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-mist border border-line text-sm focus:outline-none focus:ring-2 focus:ring-teal/30" />
+                <button id="sendBtn" class="px-4 py-2.5 rounded-xl text-white text-sm font-semibold btn-primary">
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  const token = localStorage.getItem('mc_token');
+  if (!token) window.location.href = 'index.html';
+
+  let currentMentorId = null;
+  let allMentees = [];
+  let allAdmins = [];
+  // activeContact: { type: 'mentee'|'admin', id, name, role }
+  let activeContact = null;
+  let pollTimer = null;
+
+  lucide.createIcons();
+
+  function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+  function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+  function toggleCollapse(){ document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('mainContent').classList.toggle('collapsed'); }
+
+  document.getElementById('signOutBtn').addEventListener('click', () => {
+    localStorage.removeItem('mc_token');
+    localStorage.removeItem('mc_user');
+    window.location.href = 'index.html';
+  });
+
+  function initials(name){
+    if (!name) return '?';
+    return name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  let allContacts = []; // unified, sorted list: {type, id, name, role, subtitle, lastMessage, lastAt}
+
+  function timeAgoShort(dateStr){
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const yesterday = new Date(); yesterday.setDate(now.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+
+  function renderContactList(){
+    const q = (document.getElementById('contactSearch').value || '').toLowerCase();
+    const container = document.getElementById('contactList');
+    const filtered = allContacts.filter(c => (c.name || '').toLowerCase().includes(q));
+
+    if (!filtered.length) {
+      container.innerHTML = '<p class="text-ink-faint text-xs text-center py-6">No contacts found.</p>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(c => {
+      const isActive = activeContact && activeContact.type === c.type && activeContact.id === c.id;
+      const preview = c.lastMessage
+        ? (c.lastMessage.length > 40 ? c.lastMessage.slice(0, 40) + '…' : c.lastMessage)
+        : (c.type === 'admin' ? 'Message the admin team' : 'No messages yet');
+      const avatarBg = c.type === 'admin' ? 'var(--navy)' : 'linear-gradient(135deg,var(--teal),var(--teal-deep))';
+      const badge = c.type === 'admin'
+        ? `<span class="chip chip-navy" style="padding:1px 6px;font-size:9px;flex-shrink:0">${c.role === 'super_admin' ? 'Super Admin' : 'Admin'}</span>`
+        : '';
+      return `
+        <div class="contact-row ${isActive ? 'active' : ''}"
+             onclick='openConversation(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
+          <div class="contact-avatar" style="background:${avatarBg}">${initials(c.name)}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-semibold text-ink text-sm truncate">${c.name}</p>
+              <span class="text-ink-faint text-[10.5px] flex-shrink-0">${timeAgoShort(c.lastAt)}</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 mt-0.5">
+              <p class="text-ink-faint text-xs truncate">${preview}</p>
+              ${badge}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('contactSearch').addEventListener('input', renderContactList);
+
+  async function loadContacts(){
+    try {
+      const [menteesRes, adminsRes] = await Promise.all([
+        fetch(`${API_BASE}/mentor/mentees`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/mentor/admin-messages`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      const menteesData = await menteesRes.json();
+      const adminsData = await adminsRes.json();
+
+      allMentees = (menteesData.success && menteesData.mentees) || [];
+      allAdmins = (adminsData.success && adminsData.admins) || [];
+      const adminThreadMessages = (adminsData.success && adminsData.messages) || [];
+
+      // Derive each admin's last message + timestamp from the already-fetched combined thread — no extra calls needed.
+      const adminContacts = allAdmins.map(a => {
+        const relevant = adminThreadMessages.filter(m => m.sender === a._id || m.recipient === a._id);
+        const last = relevant[relevant.length - 1];
+        return {
+          type: 'admin', id: a._id, name: a.name, role: a.role,
+          lastMessage: last ? last.content : null,
+          lastAt: last ? last.createdAt : null,
+        };
+      });
+
+      // Mentees need one call each to get their last message — acceptable for a mentor's typical mentee count.
+      const menteeContacts = await Promise.all(allMentees.map(async (m) => {
+        try {
+          const res = await fetch(`${API_BASE}/mentor/messages/${m.id}`, { headers: { Authorization: `Bearer ${token}` } });
+          const data = await res.json();
+          const messages = (res.ok && data.success && data.messages) || [];
+          const last = messages[messages.length - 1];
+          return {
+            type: 'mentee', id: m.id, name: m.name,
+            lastMessage: last ? last.content : null,
+            lastAt: last ? last.createdAt : null,
+          };
+        } catch (e) {
+          return { type: 'mentee', id: m.id, name: m.name, lastMessage: null, lastAt: null };
+        }
+      }));
+
+      allContacts = [...adminContacts, ...menteeContacts].sort((a, b) => {
+        if (!a.lastAt && !b.lastAt) return 0;
+        if (!a.lastAt) return 1;
+        if (!b.lastAt) return -1;
+        return new Date(b.lastAt) - new Date(a.lastAt);
+      });
+
+      renderContactList();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('contactList').innerHTML = '<p class="text-red-600 text-xs text-center py-6">Failed to load contacts.</p>';
+    }
+  }
+
+  function openConversation(contact){
+    activeContact = contact;
+    renderContactList();
+
+    document.getElementById('convHeader').style.display = 'flex';
+    document.getElementById('composer').style.display = 'block';
+    document.getElementById('convAvatar').textContent = initials(contact.name);
+    document.getElementById('convAvatar').style.background = contact.type === 'admin' ? 'var(--navy)' : 'linear-gradient(135deg,var(--teal),var(--teal-deep))';
+    document.getElementById('convName').textContent = contact.name;
+    document.getElementById('convMeta').textContent = contact.type === 'admin'
+      ? (contact.role === 'super_admin' ? 'Super Admin' : 'Admin')
+      : 'Mentee';
+
+    loadMessages();
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(loadMessages, 8000);
+  }
+
+  async function loadMessages(){
+    if (!activeContact) return;
+    const scroll = document.getElementById('messagesScroll');
+    try {
+      let messages = [];
+      if (activeContact.type === 'mentee') {
+        const res = await fetch(`${API_BASE}/mentor/messages/${activeContact.id}`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (!res.ok || !data.success) { scroll.innerHTML = `<p class="text-red-600 text-xs text-center py-6">${data.message || 'Failed to load messages.'}</p>`; return; }
+        messages = data.messages || [];
+      } else {
+        const res = await fetch(`${API_BASE}/mentor/admin-messages`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (!res.ok || !data.success) { scroll.innerHTML = `<p class="text-red-600 text-xs text-center py-6">${data.message || 'Failed to load messages.'}</p>`; return; }
+        messages = (data.messages || []).filter(m => m.sender === activeContact.id || m.recipient === activeContact.id);
+      }
+
+      const wasAtBottom = scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 30;
+
+      if (!messages.length) {
+        scroll.innerHTML = '<div class="h-full flex items-center justify-center text-ink-faint text-sm">No messages yet — say hello.</div>';
+        return;
+      }
+
+      scroll.innerHTML = messages.map(m => `
+        <div class="flex ${m.sender === currentMentorId ? 'justify-end' : 'justify-start'}">
+          <div class="bubble ${m.sender === currentMentorId ? 'bubble-mine' : 'bubble-theirs'}">
+            ${m.content.replace(/</g,'&lt;')}
+            <div style="font-size:10px; opacity:.6; margin-top:3px;">${new Date(m.createdAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}</div>
+          </div>
+        </div>
+      `).join('');
+
+      if (wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function showSendError(msg){
+    const el = document.getElementById('sendError');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 4000);
+  }
+
+  async function sendMessage(){
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    if (!content || !activeContact) return;
+
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    input.value = '';
+
+    try {
+      const url = activeContact.type === 'mentee' ? `${API_BASE}/mentor/messages` : `${API_BASE}/mentor/admin-messages`;
+      const body = activeContact.type === 'mentee'
+        ? { menteeId: activeContact.id, content }
+        : { adminId: activeContact.id, content };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showSendError(data.message || 'Failed to send message.');
+        input.value = content;
+        return;
+      }
+      await loadMessages();
+      document.getElementById('messagesScroll').scrollTop = document.getElementById('messagesScroll').scrollHeight;
+    } catch (err) {
+      showSendError('Network error — message not sent.');
+      input.value = content;
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('messageInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+  (async function init(){
+    const me = JSON.parse(localStorage.getItem('mc_user') || 'null');
+    if (!me) { window.location.href = 'index.html'; return; }
+    currentMentorId = me._id || me.id || null;
+    document.getElementById('sidebarName').textContent = me.name || 'Mentor';
+    const firstInitial = (me.name || 'M').charAt(0).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = firstInitial;
+    document.getElementById('topbarAvatar').textContent = firstInitial;
+    if (me.mentorProfile && me.mentorProfile.title) document.getElementById('sidebarCredentials').textContent = me.mentorProfile.title;
+    await loadContacts();
+
+    // Deep-link support: mentor-inbox.html?mentee=<id> opens that conversation directly
+    const params = new URLSearchParams(window.location.search);
+    const preselectMenteeId = params.get('mentee');
+    if (preselectMenteeId) {
+      const mentee = allMentees.find(m => m.id === preselectMenteeId);
+      if (mentee) openConversation({ type: 'mentee', id: mentee.id, name: mentee.name });
+    }
+  })();
+
+  window.addEventListener('beforeunload', () => { if (pollTimer) clearInterval(pollTimer); });
+</script>
+
+</body>
+</html>

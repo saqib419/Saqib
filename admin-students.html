@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>MedClarivo Elite | Admin — Students</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { navy:"#0A1424", "navy-2":"#0F2038", teal:"#0FA89A", "teal-2":"#33D9C8", gold:"#B9924F", mist:"#F5F7FA", "mist-2":"#EEF2F6", ink:"#0B1220", "ink-soft":"#56657B", "ink-faint":"#8B97A8", line:"rgba(11,18,32,0.08)" },
+    fontFamily: { display:["DM Serif Display","serif"], sans:["DM Sans","sans-serif"] },
+  }}}
+</script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --teal:#0FA89A; --mist:#F5F7FA; --ink:#0B1220; --ink-soft:#56657B; }
+  *{box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);min-height:100dvh;}
+  .font-display{font-family:'DM Serif Display',serif;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:240px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55);display:flex;flex-direction:column;z-index:60;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:272px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.7);padding:14px 22px;}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;}
+  .student-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;}
+  .avatar-sm{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal),#0A6E64);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+  .progress-bar{height:6px;border-radius:999px;background:var(--mist-2);overflow:hidden;}
+  .progress-fill{height:100%;border-radius:999px;background:var(--teal);}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-grey{background:var(--mist-2);color:var(--ink-soft);}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-5">
+      <p class="font-display text-white text-xl leading-none">MedClarivo</p>
+      <p class="text-teal-2 text-[11px] tracking-widest uppercase font-semibold mt-1" id="roleLabel">—</p>
+    </div>
+    <nav class="flex-1 px-0 py-2 space-y-1 overflow-y-auto">
+      <a class="nav-item" href="admin-dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-item" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+      <a class="nav-item" href="admin-mentors.html"><i data-lucide="graduation-cap"></i><span>Mentors</span></a>
+      <a class="nav-item active" href="admin-students.html"><i data-lucide="user-check"></i><span>Students</span></a>
+      <a class="nav-item" href="admin-assignments.html"><i data-lucide="clipboard-list"></i><span>Assignments</span></a>
+      <a class="nav-item" href="admin-calendar.html"><i data-lucide="calendar"></i><span>Calendar</span></a>
+      <a class="nav-item" href="admin-session-notes.html"><i data-lucide="notebook-pen"></i><span>Session Notes</span></a>
+      <a class="nav-item" href="admin-evaluations.html"><i data-lucide="star"></i><span>Evaluations</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Content Library coming soon')"><i data-lucide="library"></i><span>Content Library</span></a>
+      <a class="nav-item" href="admin-messaging.html"><i data-lucide="message-circle"></i><span>Messaging</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Payments coming soon')"><i data-lucide="credit-card"></i><span>Payments</span></a>
+      <a class="nav-item" href="#" onclick="showToast('Reports coming soon')"><i data-lucide="bar-chart-3"></i><span>Reports</span></a>
+      <a class="nav-item" href="admin-permissions.html"><i data-lucide="shield"></i><span>Permissions</span></a>
+      <a class="nav-item" href="admin-audit.html"><i data-lucide="scroll-text"></i><span>Audit Log</span></a>
+      <a class="nav-item" href="admin-tickets.html"><i data-lucide="shield-alert"></i><span>Tickets</span></a>
+      <a class="nav-item" href="admin-profile.html"><i data-lucide="user-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="px-3 pb-6">
+      <a href="#" id="signOutLink" class="nav-item text-red-300/70 hover:text-red-300 hover:bg-red-500/10">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <p class="text-ink font-semibold text-sm">Students</p>
+      <p class="text-ink-faint text-xs">Real syllabus progress and session history — not tracked fields are left blank, not faked</p>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-7xl mx-auto space-y-6">
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card"><p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Total Students</p><p class="font-display text-2xl" id="statTotal">—</p></div>
+        <div class="stat-card"><p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">With a Mentor</p><p class="font-display text-2xl" id="statWithMentor">—</p></div>
+        <div class="stat-card"><p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Avg. Syllabus Progress</p><p class="font-display text-2xl" id="statAvgProgress">—</p></div>
+        <div class="stat-card"><p class="text-ink-faint text-[11px] uppercase tracking-wider font-semibold mb-1">Upcoming Sessions</p><p class="font-display text-2xl" id="statUpcoming">—</p></div>
+      </div>
+
+      <div class="panel p-6">
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-5">
+          <div>
+            <h2 class="font-display text-lg text-ink">All Students</h2>
+            <p class="text-ink-faint text-xs mt-0.5" id="countLabel">Loading…</p>
+          </div>
+          <input type="text" id="searchInput" placeholder="Search by name or email…" autocomplete="off" class="border border-line rounded-xl px-3.5 py-2 text-sm w-full sm:w-72" oninput="renderStudents()">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="studentGrid"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+let allStudents = [];
+
+function getToken() { return localStorage.getItem('mc_token') || localStorage.getItem('admin_token'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function initials(name) { return (name || '?').split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase(); }
+function formatDate(d) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadCurrentUser() {
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      document.getElementById('roleLabel').textContent = data.user.role === 'super_admin' ? 'Super Admin' : data.user.role;
+    }
+  } catch(e) {}
+}
+
+async function loadStudents() {
+  const token = getToken();
+  if (!token) { window.location.href = 'index.html'; return; }
+  try {
+    const res = await fetch(`${API}/admin/users/students`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      allStudents = data.students || [];
+      renderStats();
+      renderStudents();
+    } else {
+      document.getElementById('studentGrid').innerHTML = `<p class="text-red-500 text-sm col-span-full text-center py-10">${data.message || 'Failed to load students.'}</p>`;
+    }
+  } catch (e) {
+    document.getElementById('studentGrid').innerHTML = '<p class="text-red-500 text-sm col-span-full text-center py-10">Network error.</p>';
+  }
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = allStudents.length;
+  document.getElementById('statWithMentor').textContent = allStudents.filter(s => s.mentorId).length;
+
+  const withProgress = allStudents.filter(s => s.syllabusProgress !== null && s.syllabusProgress !== undefined);
+  const avg = withProgress.length
+    ? Math.round(withProgress.reduce((sum, s) => sum + s.syllabusProgress, 0) / withProgress.length)
+    : null;
+  document.getElementById('statAvgProgress').textContent = avg !== null ? `${avg}%` : '—';
+
+  document.getElementById('statUpcoming').textContent = allStudents.filter(s => s.nextSession).length;
+}
+
+function renderStudents() {
+  const query = (document.getElementById('searchInput').value || '').toLowerCase();
+  const filtered = allStudents.filter(s =>
+    (s.name || '').toLowerCase().includes(query) || (s.email || '').toLowerCase().includes(query)
+  );
+  document.getElementById('countLabel').textContent = `Showing ${filtered.length} of ${allStudents.length}`;
+
+  const grid = document.getElementById('studentGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<p class="text-ink-faint text-sm col-span-full text-center py-10">No students found.</p>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(s => {
+    const progress = s.syllabusProgress;
+    const attendance = s.attendanceRate;
+    const nextSessionText = s.nextSession
+      ? `${formatDate(s.nextSession.startTime)}${s.nextSession.topic ? ' — ' + s.nextSession.topic : ''}`
+      : null;
+
+    return `
+      <div class="student-card">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="avatar-sm">${initials(s.name)}</div>
+            <div class="min-w-0">
+              <p class="font-semibold text-ink text-sm truncate">${s.name}</p>
+              <p class="text-ink-faint text-xs truncate">${s.email}</p>
+            </div>
+          </div>
+          <span class="chip ${s.isActive === false ? 'chip-grey' : ''}" style="${s.isActive === false ? '' : 'background:rgba(15,168,154,0.12);color:#0A6E64;'}">${s.isActive === false ? 'Suspended' : 'Active'}</span>
+        </div>
+
+        <div class="mb-3">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-ink-soft">Syllabus Progress</span>
+            <span class="font-semibold text-ink">${progress !== null && progress !== undefined ? progress + '%' : 'No data yet'}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${progress || 0}%"></div></div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs mb-3">
+          <span class="text-ink-soft">Session Completion</span>
+          <span class="font-semibold text-ink">${attendance !== null && attendance !== undefined ? attendance + '%' : 'No sessions yet'}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs mb-3">
+          <div>
+            <p class="text-ink-faint mb-0.5">Assigned Mentor</p>
+            <p class="font-semibold text-ink">${s.mentorName || '—'}</p>
+          </div>
+          <div>
+            <p class="text-ink-faint mb-0.5">Joined</p>
+            <p class="font-semibold text-ink">${formatDate(s.createdAt) || '—'}</p>
+          </div>
+        </div>
+
+        <div class="bg-mist-2 rounded-xl px-3 py-2 text-xs">
+          <span class="text-ink-faint">Next Scheduled Class: </span>
+          <span class="font-semibold text-ink">${nextSessionText || 'None scheduled'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('signOutLink').addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('mc_token'); localStorage.removeItem('admin_token'); localStorage.removeItem('mc_user');
+  window.location.href = 'index.html';
+});
+
+window.addEventListener('load', () => { lucide.createIcons(); loadCurrentUser(); loadStudents(); });
+</script>
+</body>
+</html>

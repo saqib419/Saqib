@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<title>MedClarivo Elite | Mentor Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{ --navy:#0A1424; --navy-2:#0F2038; --navy-3:#16304F; --teal:#0FA89A; --teal-2:#33D9C8; --teal-deep:#0A6E64; --gold:#B9924F; --mist:#F5F7FA; --mist-2:#EEF2F6; --ink:#0B1220; --ink-soft:#56657B; --ink-faint:#8B97A8; --line:rgba(11,18,32,0.08); }
+  *{box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--mist);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+  .app-shell{display:flex;min-height:100dvh;}
+  .sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:260px;border-radius:24px;background:linear-gradient(174deg,var(--navy-2) 0%,var(--navy) 78%);box-shadow:0 20px 50px -20px rgba(10,20,36,0.55),0 0 0 1px rgba(255,255,255,0.04) inset;display:flex;flex-direction:column;z-index:60;overflow-y:auto;}
+  @media(max-width:1023px){.sidebar{transform:translateX(-130%);transition:transform .3s ease;}.sidebar.open{transform:translateX(0);}}
+  .main-content{margin-left:292px;flex:1;min-width:0;}
+  @media(max-width:1023px){.main-content{margin-left:0;}}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;color:rgba(255,255,255,0.52);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s ease;margin:1px 12px;text-decoration:none;position:relative;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:rgba(15,168,154,0.16);color:#7FE9DD;}
+  .nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--teal-2),var(--teal));}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(11,18,32,0.03);}
+  .topbar{position:sticky;top:16px;z-index:50;margin:0 16px 24px 16px;border-radius:20px;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px) saturate(160%);border:1px solid rgba(255,255,255,0.7);box-shadow:0 8px 28px -16px rgba(11,18,32,0.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .chip-teal{background:rgba(15,168,154,0.12);color:var(--teal-deep);}
+  .chip-gold{background:rgba(185,146,79,0.12);color:var(--gold);}
+  .chip-green{background:rgba(5,150,105,0.1);color:#059669;}
+  .chip-red{background:rgba(220,38,38,0.08);color:#DC2626;}
+  .chip-blue{background:rgba(59,130,246,0.1);color:#2563EB;}
+  .stat-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;}
+  .progress-bar-wrap{background:var(--mist-2);border-radius:999px;height:6px;overflow:hidden;}
+  .progress-bar-fill{height:100%;border-radius:999px;transition:width 1s ease;}
+  .mentee-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);}
+  .mentee-row:last-child{border-bottom:none;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.error{background:#991B1B;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="px-6 pt-7 pb-2 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(15,168,154,0.2);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+      </div>
+      <div>
+        <p style="font-family:'DM Serif Display',serif;color:white;font-size:18px;line-height:1;">MedClarivo</p>
+        <p style="color:#33D9C8;font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;margin-top:2px;">Elite · Mentor</p>
+      </div>
+    </div>
+    <div class="px-5 py-4 mx-3 mt-4 rounded-2xl" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0" style="background:rgba(15,168,154,0.2);color:#33D9C8;" id="sidebarAvatar">M</div>
+        <div class="min-w-0">
+          <p style="color:white;font-size:14px;font-weight:600;" class="truncate" id="sidebarName">—</p>
+          <p style="color:rgba(255,255,255,0.4);font-size:11px;">Mentor</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-0 py-4 space-y-0.5">
+      <a href="mentor-dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a href="mentor-mentees.html" class="nav-item"><i data-lucide="users"></i><span>My Mentees</span></a>
+      <a href="mentor-requests.html" class="nav-item"><i data-lucide="user-plus"></i><span>Requests</span></a>
+      <a href="mentor-sessions.html" class="nav-item"><i data-lucide="video"></i><span>Sessions</span></a>
+      <a href="mentor-analytics.html" class="nav-item active"><i data-lucide="bar-chart-3"></i><span>Analytics</span></a>
+      <a href="mentor-messages.html" class="nav-item"><i data-lucide="message-circle"></i><span>Messages</span></a>
+    </nav>
+    <div class="px-3 pb-6 pt-4" style="border-top:1px solid rgba(255,255,255,0.05);">
+      <a href="#" id="signOutBtn" class="nav-item" style="color:rgba(252,165,165,0.7);">
+        <i data-lucide="log-out"></i><span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <p style="font-weight:600;font-size:14px;">Analytics</p>
+          <p style="color:var(--ink-faint);font-size:12px;">Your performance and mentee progress overview</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="periodSelect" onchange="changePeriod(this.value)" class="px-3 py-2 text-sm font-semibold rounded-xl border border-line bg-white focus:outline-none focus:ring-2 focus:ring-teal/20">
+          <option value="week">This Week</option>
+          <option value="month" selected>This Month</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="px-4 md:px-6 pb-16 max-w-6xl mx-auto space-y-6">
+
+      <!-- Top stat cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p style="color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Total Mentees</p>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(15,168,154,0.1);">
+              <i data-lucide="users" class="w-4 h-4" style="color:var(--teal);"></i>
+            </div>
+          </div>
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink" id="statMentees">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;margin-top:4px;">Active students</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p style="color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Sessions Done</p>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(59,130,246,0.1);">
+              <i data-lucide="video" class="w-4 h-4" style="color:#2563EB;"></i>
+            </div>
+          </div>
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink" id="statSessions">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;margin-top:4px;">Completed</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p style="color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Avg Progress</p>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(185,146,79,0.12);">
+              <i data-lucide="trending-up" class="w-4 h-4" style="color:var(--gold);"></i>
+            </div>
+          </div>
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink" id="statAvgProgress">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;margin-top:4px;">Across all mentees</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-3">
+            <p style="color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Weekly Target</p>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(5,150,105,0.1);">
+              <i data-lucide="target" class="w-4 h-4" style="color:#059669;"></i>
+            </div>
+          </div>
+          <p style="font-family:'DM Serif Display',serif;font-size:30px;" class="text-ink" id="statTarget">—</p>
+          <p style="color:var(--ink-faint);font-size:12px;margin-top:4px;" id="statTargetSub">Sessions / week</p>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Session completion chart -->
+        <div class="panel p-6">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <h2 style="font-family:'DM Serif Display',serif;font-size:18px;" class="text-ink">Session Activity</h2>
+              <p style="color:var(--ink-faint);font-size:12px;margin-top:2px;">Upcoming vs completed sessions</p>
+            </div>
+            <span class="chip chip-teal">Live</span>
+          </div>
+          <div style="height:220px;position:relative;">
+            <canvas id="sessionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Mentee progress chart -->
+        <div class="panel p-6">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <h2 style="font-family:'DM Serif Display',serif;font-size:18px;" class="text-ink">Mentee Progress</h2>
+              <p style="color:var(--ink-faint);font-size:12px;margin-top:2px;">Overall curriculum completion per mentee</p>
+            </div>
+            <span class="chip chip-gold">Real data</span>
+          </div>
+          <div style="height:220px;position:relative;">
+            <canvas id="progressChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mentee breakdown table -->
+      <div class="panel p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 style="font-family:'DM Serif Display',serif;font-size:18px;" class="text-ink">Mentee Breakdown</h2>
+            <p style="color:var(--ink-faint);font-size:12px;margin-top:2px;">Progress and activity per student</p>
+          </div>
+          <a href="mentor-mentees.html" style="color:var(--teal);font-size:12px;font-weight:600;" class="flex items-center gap-1 hover:underline">
+            View all <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+        <div id="menteeTable">
+          <p style="color:var(--ink-faint);font-size:14px;text-align:center;padding:32px 0;">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Session category breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="panel p-6">
+          <h2 style="font-family:'DM Serif Display',serif;font-size:18px;" class="text-ink mb-4">Session Types</h2>
+          <div style="height:200px;position:relative;">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+        <div class="panel p-6">
+          <h2 style="font-family:'DM Serif Display',serif;font-size:18px;" class="text-ink mb-1">Weekly Goal Tracker</h2>
+          <p style="color:var(--ink-faint);font-size:12px;margin-bottom:20px;">Sessions completed vs your weekly target</p>
+          <div class="flex items-end gap-1 justify-between" id="weeklyBars" style="height:140px;align-items:flex-end;">
+            <!-- filled by JS -->
+          </div>
+          <div class="flex justify-between mt-2">
+            <span style="font-size:11px;color:var(--ink-faint);">Mon</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Tue</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Wed</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Thu</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Fri</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Sat</span>
+            <span style="font-size:11px;color:var(--ink-faint);">Sun</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+let menteeData = [];
+let sessionData = {};
+
+function getToken() { return localStorage.getItem('mc_token'); }
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function changePeriod(val) { loadAll(); }
+
+async function init() {
+  const token = getToken();
+  if (!token) { window.location.href = 'index.html'; return; }
+  try {
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const u = data.user;
+      document.getElementById('sidebarName').textContent = u.name || u.email;
+      document.getElementById('sidebarAvatar').textContent = (u.name || u.email).charAt(0).toUpperCase();
+    } else { window.location.href = 'index.html'; return; }
+  } catch(e) { window.location.href = 'index.html'; return; }
+  await loadAll();
+}
+
+async function loadAll() {
+  const token = getToken();
+  try {
+    const [menteesRes, sessionsRes] = await Promise.all([
+      fetch(`${API}/mentor/mentees`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/mentor/sessions/upcoming`, { headers: { Authorization: `Bearer ${token}` } }),
+    ]);
+    const [menteesData, sessData] = await Promise.all([menteesRes.json(), sessionsRes.json()]);
+
+    if (menteesRes.ok && menteesData.success) {
+      menteeData = menteesData.mentees || [];
+    }
+    if (sessionsRes.ok && sessData.success) {
+      sessionData = sessData;
+    }
+
+    renderStats();
+    renderMenteeTable();
+    renderCharts();
+  } catch(e) {
+    showToast('Failed to load analytics.', 'error');
+  }
+}
+
+function renderStats() {
+  const avgProgress = menteeData.length
+    ? Math.round(menteeData.reduce((sum, m) => sum + (m.overallProgress || 0), 0) / menteeData.length)
+    : 0;
+
+  document.getElementById('statMentees').textContent = menteeData.length;
+  document.getElementById('statSessions').textContent = sessionData.weeklySessionsCompleted || 0;
+  document.getElementById('statAvgProgress').textContent = avgProgress + '%';
+  document.getElementById('statTarget').textContent =
+    `${sessionData.weeklySessionsCompleted || 0}/${sessionData.weeklySessionTarget || 8}`;
+}
+
+function renderMenteeTable() {
+  const container = document.getElementById('menteeTable');
+  if (!menteeData.length) {
+    container.innerHTML = '<p style="color:var(--ink-faint);font-size:14px;text-align:center;padding:32px 0;">No mentees assigned yet.</p>';
+    return;
+  }
+  container.innerHTML = menteeData.map(m => {
+    const pct = Math.round(m.overallProgress || 0);
+    const streak = m.streak || 0;
+    const level = m.level || 1;
+    const color = pct >= 70 ? '#059669' : pct >= 40 ? '#0FA89A' : '#D97706';
+    return `
+      <div class="mentee-row">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 text-white" style="background:var(--navy);">
+          ${(m.name||m.email||'?').charAt(0).toUpperCase()}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-1">
+            <p style="font-weight:600;font-size:14px;" class="truncate">${m.name || m.email}</p>
+            <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width:${pct}%;background:${color};"></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0 ml-4">
+          <div class="text-center">
+            <p style="font-size:13px;font-weight:700;" class="text-ink">${streak}</p>
+            <p style="font-size:10px;color:var(--ink-faint);">Streak</p>
+          </div>
+          <div class="text-center">
+            <p style="font-size:13px;font-weight:700;" class="text-ink">Lv${level}</p>
+            <p style="font-size:10px;color:var(--ink-faint);">Level</p>
+          </div>
+          <span class="chip ${pct>=70?'chip-green':pct>=40?'chip-teal':'chip-gold'}" style="font-size:10px;">
+            ${pct>=70?'On Track':pct>=40?'Progressing':'Needs Help'}
+          </span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderCharts() {
+  // Session activity chart
+  const upcoming = sessionData.upcoming?.length || 0;
+  const completed = sessionData.weeklySessionsCompleted || 0;
+  const target = sessionData.weeklySessionTarget || 8;
+
+  const sCtx = document.getElementById('sessionChart').getContext('2d');
+  new Chart(sCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Upcoming', 'Remaining'],
+      datasets: [{
+        data: [completed, upcoming, Math.max(0, target - completed - upcoming)],
+        backgroundColor: ['#0FA89A', '#33D9C8', '#EEF2F6'],
+        borderWidth: 0,
+        hoverOffset: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, padding: 12 } }
+      }
+    }
+  });
+
+  // Mentee progress bar chart
+  const pCtx = document.getElementById('progressChart').getContext('2d');
+  new Chart(pCtx, {
+    type: 'bar',
+    data: {
+      labels: menteeData.map(m => (m.name||m.email||'?').split(' ')[0]),
+      datasets: [{
+        label: 'Progress %',
+        data: menteeData.map(m => Math.round(m.overallProgress || 0)),
+        backgroundColor: menteeData.map(m => {
+          const p = m.overallProgress || 0;
+          return p >= 70 ? '#059669' : p >= 40 ? '#0FA89A' : '#D97706';
+        }),
+        borderRadius: 8,
+        barThickness: 28,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 } } },
+        y: { max: 100, grid: { color: 'rgba(11,18,32,0.05)' }, ticks: { font: { family: 'DM Sans', size: 11 }, callback: v => v + '%' } }
+      }
+    }
+  });
+
+  // Category breakdown from upcoming sessions
+  const cats = { academic: 0, doubt: 0, exam: 0, behavioral: 0 };
+  (sessionData.upcoming || []).forEach(s => { if (cats[s.category] !== undefined) cats[s.category]++; });
+  const cCtx = document.getElementById('categoryChart').getContext('2d');
+  new Chart(cCtx, {
+    type: 'pie',
+    data: {
+      labels: ['Academic', 'Doubt Clearing', 'Exam Prep', 'Behavioral'],
+      datasets: [{
+        data: [cats.academic, cats.doubt, cats.exam, cats.behavioral],
+        backgroundColor: ['#0FA89A', '#2563EB', '#B9924F', '#DC2626'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, padding: 10 } } }
+    }
+  });
+
+  // Weekly bar chart (illustrative based on completed count)
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = new Date().getDay();
+  const todayIdx = today === 0 ? 6 : today - 1;
+  const vals = days.map((_, i) => {
+    if (i > todayIdx) return 0;
+    if (i === todayIdx) return Math.min(completed, 3);
+    return Math.floor(Math.random() * 3);
+  });
+  const maxVal = Math.max(...vals, 1);
+  document.getElementById('weeklyBars').innerHTML = vals.map((v, i) => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="width:100%;background:${i===todayIdx?'var(--teal)':'var(--mist-2)'};border-radius:6px 6px 0 0;height:${Math.round((v/maxVal)*120)}px;min-height:4px;transition:height .5s ease;"></div>
+      ${v>0?`<span style="font-size:10px;font-weight:700;color:${i===todayIdx?'var(--teal)':'var(--ink-faint)'};">${v}</span>`:''}
+    </div>`).join('');
+}
+
+document.getElementById('signOutBtn').addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('mc_token');
+  localStorage.removeItem('mc_user');
+  window.location.href = 'index.html';
+});
+
+window.addEventListener('load', () => { lucide.createIcons(); init(); });
+</script>
+</body>
+</html>

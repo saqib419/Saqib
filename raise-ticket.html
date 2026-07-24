@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<script src="sessionGuard.js"></script>
+<title>MedClarivo Elite — Report a Concern</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:        "#0C1B2E",
+          "navy-mid":  "#16283F",
+          teal:        "#0D9488",
+          "teal-light":"#14B8A8",
+          "teal-dim":  "#E6F7F5",
+          "teal-text": "#0B7A70",
+          surface:     "#F7F9FC",
+          card:        "#FFFFFF",
+          ink:         "#0C1B2E",
+          "ink-muted": "#5B6B7F",
+          "ink-faint": "#94A3B8",
+          outline:     "#E4E9F0",
+          red:         "#DC2626",
+          "red-dim":   "#FEF2F2",
+          amber:       "#D97706",
+          "amber-dim": "#FEF3E2",
+          green:       "#059669",
+          "green-dim": "#ECFDF5",
+        },
+        fontFamily: {
+          serif: ["DM Serif Display", "serif"],
+          sans:  ["DM Sans", "sans-serif"],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'DM Sans', sans-serif; background: #F7F9FC; min-height: 100dvh; }
+  .card { background: #fff; border: 1px solid #E4E9F0; border-radius: 1.25rem; }
+  .step-line { transition: width 0.4s ease; }
+  .category-card { cursor: pointer; border: 2px solid #E4E9F0; border-radius: 1rem; padding: 16px; transition: all 0.2s; background: white; }
+  .category-card:hover { border-color: #0D9488; background: #E6F7F5; }
+  .category-card.selected { border-color: #0D9488; background: #E6F7F5; }
+  .category-card.selected .cat-dot { background: #0D9488; }
+  .cat-dot { width: 10px; height: 10px; border-radius: 50%; background: #E4E9F0; flex-shrink: 0; transition: background 0.2s; }
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .status-open { background: #FEF3E2; color: #D97706; }
+  .status-reviewing { background: #EFF6FF; color: #2563EB; }
+  .status-resolved { background: #ECFDF5; color: #059669; }
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0C1B2E; color: white; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; z-index: 200; opacity: 0; pointer-events: none; transition: all 0.3s; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #065F46; }
+  .toast.error { background: #991B1B; }
+</style>
+</head>
+<body class="text-ink">
+
+<!-- Nav -->
+<header class="bg-navy text-white px-6 md:px-10 h-16 flex items-center justify-between sticky top-0 z-50">
+  <div class="flex items-center gap-3">
+    <a href="dashboard.html" class="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+    </a>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-teal flex items-center justify-center">
+      <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+    </div>
+    <span class="font-serif text-base">Med<em class="text-teal not-italic">Clarivo</em> Elite</span>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-5 py-10 space-y-6">
+
+  <!-- Page title -->
+  <section class="text-center">
+    <div class="w-14 h-14 rounded-2xl bg-red-dim border border-red/20 flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="flag" class="w-7 h-7 text-red"></i>
+    </div>
+    <h1 class="font-serif text-3xl text-ink mb-2">Report a Concern</h1>
+    <p class="text-ink-muted text-sm max-w-md mx-auto leading-relaxed">
+      This is a confidential channel. Your identity is only visible to MedClarivo's Trust & Safety team — never to your mentor.
+    </p>
+  </section>
+
+  <!-- VIEW SWITCHER -->
+  <div class="flex gap-2 bg-surface rounded-xl p-1 border border-outline">
+    <button id="btnNew" onclick="switchView('new')" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all bg-white shadow-sm text-ink">
+      Raise a Ticket
+    </button>
+    <button id="btnHistory" onclick="switchView('history')" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all text-ink-muted">
+      My Tickets
+    </button>
+  </div>
+
+  <!-- ═══════════ NEW TICKET FORM ═══════════ -->
+  <div id="viewNew">
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      <div class="flex items-center gap-2 flex-1">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" id="step1ind" style="background:#0D9488;color:white;">1</div>
+        <div class="flex-1 h-1 rounded-full bg-outline overflow-hidden">
+          <div class="h-full bg-teal step-line" id="line1" style="width:0%"></div>
+        </div>
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" id="step2ind" style="background:#E4E9F0;color:#94A3B8;">2</div>
+        <div class="flex-1 h-1 rounded-full bg-outline overflow-hidden">
+          <div class="h-full bg-teal step-line" id="line2" style="width:0%"></div>
+        </div>
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" id="step3ind" style="background:#E4E9F0;color:#94A3B8;">3</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Category -->
+    <div id="step1" class="card p-7">
+      <p class="text-xs font-bold uppercase tracking-widest text-teal-text mb-1">Step 1 of 3</p>
+      <h2 class="font-serif text-xl text-ink mb-5">What happened?</h2>
+      <div class="space-y-3" id="categoryList">
+        <div class="category-card flex items-center gap-3" onclick="selectCategory(this,'asked_personal_contact')">
+          <div class="cat-dot"></div>
+          <div>
+            <p class="font-semibold text-sm text-ink">Asked for personal contact</p>
+            <p class="text-xs text-ink-muted">Requested phone number, social media, or private communication</p>
+          </div>
+        </div>
+        <div class="category-card flex items-center gap-3" onclick="selectCategory(this,'inappropriate_behavior')">
+          <div class="cat-dot"></div>
+          <div>
+            <p class="font-semibold text-sm text-ink">Inappropriate behavior</p>
+            <p class="text-xs text-ink-muted">Actions that made you uncomfortable or felt threatening</p>
+          </div>
+        </div>
+        <div class="category-card flex items-center gap-3" onclick="selectCategory(this,'inappropriate_language')">
+          <div class="cat-dot"></div>
+          <div>
+            <p class="font-semibold text-sm text-ink">Inappropriate language</p>
+            <p class="text-xs text-ink-muted">Rude, offensive, or abusive communication</p>
+          </div>
+        </div>
+        <div class="category-card flex items-center gap-3" onclick="selectCategory(this,'other')">
+          <div class="cat-dot"></div>
+          <div>
+            <p class="font-semibold text-sm text-ink">Other concern</p>
+            <p class="text-xs text-ink-muted">Something not listed above that needs attention</p>
+          </div>
+        </div>
+      </div>
+      <button onclick="goStep(2)" class="mt-6 w-full py-4 bg-navy text-white font-semibold rounded-xl hover:bg-navy-mid transition-colors flex items-center justify-center gap-2">
+        Continue <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- STEP 2: Description -->
+    <div id="step2" class="card p-7 hidden">
+      <p class="text-xs font-bold uppercase tracking-widest text-teal-text mb-1">Step 2 of 3</p>
+      <h2 class="font-serif text-xl text-ink mb-2">Describe what happened</h2>
+      <p class="text-sm text-ink-muted mb-5">Be as specific as possible — include dates, what was said, and any context that might help our team.</p>
+      <textarea id="description" rows="6" maxlength="2000"
+        class="w-full border border-outline rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal transition-all"
+        placeholder="Describe the incident in detail..."></textarea>
+      <p class="text-xs text-ink-faint text-right mt-1"><span id="charCount">0</span>/2000</p>
+      <div class="flex gap-3 mt-4">
+        <button onclick="goStep(1)" class="px-5 py-3 border border-outline rounded-xl text-sm font-semibold text-ink-muted hover:bg-surface transition-colors">
+          ← Back
+        </button>
+        <button onclick="goStep(3)" class="flex-1 py-3 bg-navy text-white font-semibold rounded-xl hover:bg-navy-mid transition-colors flex items-center justify-center gap-2">
+          Continue <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: T&Cs + Submit -->
+    <div id="step3" class="card p-7 hidden space-y-5">
+      <p class="text-xs font-bold uppercase tracking-widest text-teal-text mb-1">Step 3 of 3</p>
+      <h2 class="font-serif text-xl text-ink">Terms & Conditions</h2>
+
+      <div class="bg-surface border border-outline rounded-xl p-5 text-sm text-ink-muted leading-relaxed space-y-3 max-h-64 overflow-y-auto">
+        <p class="font-semibold text-ink">MedClarivo Elite — Ticket Submission Policy</p>
+        <p><strong>1. Confidentiality.</strong> Your name and identity will only be disclosed to MedClarivo's Trust & Safety team. Your mentor will not be informed of who raised the ticket during the investigation period.</p>
+        <p><strong>2. Response commitment.</strong> Our team will contact you within 24 hours of ticket submission to acknowledge your report and outline next steps.</p>
+        <p><strong>3. Investigation process.</strong> All reports are investigated impartially. Both parties may be contacted separately. No action is taken solely on the basis of a single report without investigation.</p>
+        <p><strong>4. Mentor rights.</strong> The mentor subject to investigation will be informed of the general nature of the complaint (not your identity) and given an opportunity to respond.</p>
+        <p><strong>5. Outcomes.</strong> Depending on investigation findings, outcomes may include a formal warning, mentorship reassignment, temporary suspension, or permanent removal of the mentor from the platform.</p>
+
+        <div class="border border-red/30 bg-red-dim rounded-xl p-4 mt-2">
+          <p class="font-bold text-red flex items-center gap-2 mb-2">
+            <i data-lucide="triangle-alert" class="w-4 h-4"></i>
+            Warning: False or Malicious Reports
+          </p>
+          <p class="text-red/80 text-sm leading-relaxed">
+            If an investigation determines that a ticket was submitted <strong>in bad faith</strong>, for entertainment, or with intent to harm a mentor's reputation without factual basis:
+          </p>
+          <ul class="list-disc list-inside mt-2 space-y-1 text-red/80 text-sm">
+            <li>The student's <strong>membership will be permanently terminated</strong> without refund.</li>
+            <li>The matter may be <strong>referred for legal proceedings</strong> for defamation or harassment.</li>
+            <li>A permanent record will be maintained and may affect future enrolment on any MedClarivo platform.</li>
+          </ul>
+        </div>
+
+        <p><strong>6. Privacy.</strong> All ticket data is stored securely and is only accessible to authorised Trust & Safety personnel. It is never shared with third parties except where required by law.</p>
+        <p><strong>7. Withdrawal.</strong> Once submitted, a ticket cannot be withdrawn as it triggers a mandatory review process. You may, however, provide additional information at any time by contacting support.</p>
+      </div>
+
+      <label class="flex items-start gap-3 cursor-pointer group">
+        <input type="checkbox" id="agreeCheck" class="mt-1 w-4 h-4 accent-teal cursor-pointer"/>
+        <span class="text-sm text-ink-muted leading-relaxed group-hover:text-ink transition-colors">
+          I have read and understood the above terms. I confirm that the information I am submitting is truthful and accurate to the best of my knowledge, and I understand the consequences of submitting a false report.
+        </span>
+      </label>
+
+      <div class="flex gap-3">
+        <button onclick="goStep(2)" class="px-5 py-3 border border-outline rounded-xl text-sm font-semibold text-ink-muted hover:bg-surface transition-colors">
+          ← Back
+        </button>
+        <button onclick="submitTicket()" id="submitBtn"
+          class="flex-1 py-3 bg-red text-white font-semibold rounded-xl hover:bg-red/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i data-lucide="flag" class="w-4 h-4"></i> Submit Report
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="stepSuccess" class="card p-10 text-center hidden">
+      <div class="w-16 h-16 rounded-full bg-green-dim flex items-center justify-center mx-auto mb-5">
+        <i data-lucide="check-circle" class="w-8 h-8 text-green"></i>
+      </div>
+      <h2 class="font-serif text-2xl text-ink mb-2">Report Submitted</h2>
+      <p class="text-ink-muted text-sm mb-6 leading-relaxed max-w-sm mx-auto">
+        Your concern has been received. Our Trust & Safety team will contact you within <strong>24 hours</strong>. Your identity remains confidential.
+      </p>
+      <div class="bg-surface border border-outline rounded-xl p-4 text-left text-sm space-y-2 mb-6">
+        <div class="flex justify-between"><span class="text-ink-faint">Ticket ID</span><span class="font-mono font-semibold text-ink" id="successTicketId">—</span></div>
+        <div class="flex justify-between"><span class="text-ink-faint">Category</span><span class="font-semibold text-ink" id="successCategory">—</span></div>
+        <div class="flex justify-between"><span class="text-ink-faint">Status</span><span class="status-badge status-open">Open</span></div>
+      </div>
+      <button onclick="switchView('history')" class="w-full py-3 border border-outline rounded-xl text-sm font-semibold text-ink hover:bg-surface transition-colors">
+        View My Tickets
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ TICKET HISTORY ═══════════ -->
+  <div id="viewHistory" class="hidden">
+    <div class="card p-6">
+      <h2 class="font-serif text-lg text-ink mb-4">My Tickets</h2>
+      <div id="ticketList" class="space-y-4">
+        <p class="text-center text-ink-faint py-8 text-sm">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://med-clarivo.onrender.com/api';
+let selectedCategory = null;
+let currentStep = 1;
+
+function getToken() { return localStorage.getItem('mc_token'); }
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function switchView(view) {
+  document.getElementById('viewNew').classList.toggle('hidden', view !== 'new');
+  document.getElementById('viewHistory').classList.toggle('hidden', view !== 'history');
+  document.getElementById('btnNew').className = `flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${view === 'new' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted'}`;
+  document.getElementById('btnHistory').className = `flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${view === 'history' ? 'bg-white shadow-sm text-ink' : 'text-ink-muted'}`;
+  if (view === 'history') loadTickets();
+}
+
+function selectCategory(el, value) {
+  document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCategory = value;
+}
+
+function goStep(n) {
+  if (n === 2 && !selectedCategory) {
+    showToast('Please select a category first.', 'error'); return;
+  }
+  if (n === 3) {
+    const desc = document.getElementById('description').value.trim();
+    if (desc.length < 20) {
+      showToast('Please describe what happened (at least 20 characters).', 'error'); return;
+    }
+  }
+
+  ['step1','step2','step3','stepSuccess'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  const stepEl = document.getElementById(`step${n}`);
+  if (stepEl) stepEl.classList.remove('hidden');
+  currentStep = n;
+
+  for (let i = 1; i <= 3; i++) {
+    const ind = document.getElementById(`step${i}ind`);
+    if (i < n) { ind.style.background = '#0D9488'; ind.style.color = 'white'; ind.innerHTML = '✓'; }
+    else if (i === n) { ind.style.background = '#0D9488'; ind.style.color = 'white'; ind.textContent = i; }
+    else { ind.style.background = '#E4E9F0'; ind.style.color = '#94A3B8'; ind.textContent = i; }
+  }
+  document.getElementById('line1').style.width = n > 1 ? '100%' : '0%';
+  document.getElementById('line2').style.width = n > 2 ? '100%' : '0%';
+}
+
+document.getElementById('description').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+async function submitTicket() {
+  if (!document.getElementById('agreeCheck').checked) {
+    showToast('Please accept the terms and conditions.', 'error'); return;
+  }
+  const description = document.getElementById('description').value.trim();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Submitting...';
+
+  try {
+    const res = await fetch(`${API}/tickets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ category: selectedCategory, description }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const catLabels = {
+        asked_personal_contact: 'Asked for personal contact',
+        inappropriate_behavior: 'Inappropriate behavior',
+        inappropriate_language: 'Inappropriate language',
+        other: 'Other concern',
+      };
+      document.getElementById('successTicketId').textContent = data.ticket._id.slice(-8).toUpperCase();
+      document.getElementById('successCategory').textContent = catLabels[data.ticket.category] || data.ticket.category;
+      ['step1','step2','step3'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('stepSuccess').classList.remove('hidden');
+    } else {
+      showToast(data.message || 'Failed to submit. Try again.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Submit Report';
+    }
+  } catch (e) {
+    showToast('Cannot reach server. Please try again.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Report';
+  }
+}
+
+async function loadTickets() {
+  const list = document.getElementById('ticketList');
+  list.innerHTML = '<p class="text-center text-ink-faint py-8 text-sm">Loading...</p>';
+  try {
+    const res = await fetch(`${API}/tickets`, { headers: { Authorization: `Bearer ${getToken()}` } });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const tickets = data.tickets;
+      if (!tickets.length) {
+        list.innerHTML = '<p class="text-center text-ink-faint py-8 text-sm">No tickets submitted yet.</p>';
+        return;
+      }
+      const catLabels = {
+        asked_personal_contact: 'Asked for personal contact',
+        inappropriate_behavior: 'Inappropriate behavior',
+        inappropriate_language: 'Inappropriate language',
+        other: 'Other concern',
+      };
+      list.innerHTML = tickets.map(t => `
+        <div class="border border-outline rounded-xl p-5">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <p class="font-semibold text-sm text-ink">${catLabels[t.category] || t.category}</p>
+              <p class="text-xs text-ink-faint mt-0.5">${new Date(t.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</p>
+            </div>
+            <span class="status-badge status-${t.status}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span>
+          </div>
+          <p class="text-sm text-ink-muted leading-relaxed line-clamp-3">${t.description}</p>
+          ${t.status === 'resolved' ? `<div class="mt-3 p-3 bg-green-dim rounded-lg border border-green/20"><p class="text-xs font-semibold text-green mb-1">Resolved</p><p class="text-xs text-ink-muted">${t.adminNotes || 'This ticket has been resolved by our team.'}</p></div>` : ''}
+          ${t.contactedAt ? `<p class="text-xs text-teal-text mt-2 flex items-center gap-1">✓ Team contacted you on ${new Date(t.contactedAt).toLocaleDateString('en-GB')}</p>` : ''}
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    list.innerHTML = '<p class="text-center text-ink-faint py-8 text-sm">Failed to load tickets.</p>';
+  }
+}
+
+window.addEventListener('load', () => lucide.createIcons());
+</script>
+</body>
+</html>

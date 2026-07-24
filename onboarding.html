@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+<script src="sessionGuard.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedClarivo Elite — Tell us about yourself</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0C1B2E', 'ink-muted': '#4A5568', 'ink-faint': '#94A3B8',
+          teal: '#0D9488', 'teal-dark': '#0A7A70', border: '#E2E8F0',
+          surface: '#FFFFFF', bg: '#F7F9FC',
+        },
+        fontFamily: { serif: ['DM Serif Display', 'serif'], sans: ['DM Sans', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; display:inline-block; vertical-align:middle; }
+  .glass-surface { background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border:1px solid rgba(226,232,240,0.6); }
+  @keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+  .animate-float { animation:float 6s ease-in-out infinite; }
+  .option-card { cursor:pointer; border:1.5px solid #E2E8F0; border-radius:12px; padding:12px 16px; transition:all 0.2s; background:white; display:flex; align-items:center; gap:10px; font-size:14px; color:#4A5568; font-weight:500; }
+  .option-card:hover { border-color:#0D9488; background:#F0FDFA; color:#0C1B2E; }
+  .option-card.selected { border-color:#0D9488; background:#F0FDFA; color:#0C1B2E; }
+  .option-card.selected .option-dot { background:#0D9488; }
+  .option-dot { width:8px; height:8px; border-radius:50%; background:#E2E8F0; flex-shrink:0; transition:background 0.2s; }
+  .step-dot { width:8px; height:8px; border-radius:50%; background:#E2E8F0; transition:all 0.3s; }
+  .step-dot.active { background:#0D9488; width:24px; border-radius:4px; }
+  .step-dot.done { background:#0D9488; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); padding:12px 20px; border-radius:8px; font-size:13px; font-weight:500; box-shadow:0 20px 48px rgba(12,27,46,0.12); opacity:0; transition:opacity 0.3s,transform 0.3s; z-index:999; white-space:nowrap; color:white; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { background:#065F46; }
+  .toast.error { background:#991B1B; }
+  body { min-height:100dvh; font-family:'DM Sans',sans-serif; }
+  .step { display:none; }
+  .step.active { display:block; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+  .step.active { animation:slideIn 0.35s ease both; }
+</style>
+</head>
+<body class="bg-bg text-ink min-h-screen flex items-center justify-center overflow-x-hidden">
+
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[100px] animate-float" style="background:rgba(13,148,136,0.08)"></div>
+  <div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] animate-float" style="background:rgba(12,27,46,0.05);animation-delay:-2s"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<main class="relative z-10 w-full max-w-md px-4 md:px-0 py-10">
+
+  <header class="text-center mb-8">
+    <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-ink shadow-md mb-4">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+    </div>
+    <h1 class="font-serif text-3xl text-ink tracking-tight mb-1">Med<em class="text-teal">Clarivo</em> Elite</h1>
+    <p class="text-sm text-ink-muted" id="greetMsg">Let's personalise your experience.</p>
+  </header>
+
+  <!-- Step dots -->
+  <div class="flex items-center justify-center gap-2 mb-8">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+  </div>
+
+  <div class="glass-surface px-8 py-10 rounded-[2rem] shadow-[0px_10px_40px_rgba(0,0,0,0.06)]">
+
+    <!-- STEP 1: Target Exam -->
+    <div class="step active" id="step-1">
+      <div class="mb-7">
+        <p class="text-xs font-semibold text-teal uppercase tracking-widest mb-1">Step 1 of 4</p>
+        <h2 class="font-serif text-2xl text-ink mb-1">What's your target exam?</h2>
+        <p class="text-xs text-ink-muted">We'll match you with the right mentors.</p>
+      </div>
+      <div class="space-y-3" id="examOptions">
+        <div class="option-card" onclick="selectOption(this,'exam','NEET UG')"><div class="option-dot"></div> NEET UG</div>
+        <div class="option-card" onclick="selectOption(this,'exam','NEET PG')"><div class="option-dot"></div> NEET PG</div>
+        <div class="option-card" onclick="selectOption(this,'exam','AIIMS')"><div class="option-dot"></div> AIIMS PG</div>
+        <div class="option-card" onclick="selectOption(this,'exam','JIPMER')"><div class="option-dot"></div> JIPMER PG</div>
+        <div class="option-card" onclick="selectOption(this,'exam','USMLE')"><div class="option-dot"></div> USMLE</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Current Level (dynamic) -->
+    <div class="step" id="step-2">
+      <div class="mb-7">
+        <p class="text-xs font-semibold text-teal uppercase tracking-widest mb-1">Step 2 of 4</p>
+        <h2 class="font-serif text-2xl text-ink mb-1" id="step2Title">Where are you right now?</h2>
+        <p class="text-xs text-ink-muted">This helps us set the right pace for you.</p>
+      </div>
+      <div class="space-y-3" id="levelOptions"></div>
+    </div>
+
+    <!-- STEP 3: Dream Institution (dynamic) -->
+    <div class="step" id="step-3">
+      <div class="mb-7">
+        <p class="text-xs font-semibold text-teal uppercase tracking-widest mb-1">Step 3 of 4</p>
+        <h2 class="font-serif text-2xl text-ink mb-1" id="step3Title">What's your dream institution?</h2>
+        <p class="text-xs text-ink-muted" id="step3Sub">Dream big — we'll help you get there.</p>
+      </div>
+      <div class="space-y-3" id="institutionOptions"></div>
+
+      <!-- Score input variant (for repeaters) -->
+      <div class="space-y-5 hidden" id="scoreInputs">
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" id="prevScoreLabel" for="prevScore">Previous Score</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint text-[20px]">history</span>
+            <input class="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="prevScore" type="number" min="0" placeholder="e.g. 540"/>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-muted ml-1" id="targetScoreLabel" for="targetScore">Target Score</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint text-[20px]">target</span>
+            <input class="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-all text-sm" id="targetScore" type="number" min="0" placeholder="e.g. 650"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Study Hours -->
+    <div class="step" id="step-4">
+      <div class="mb-7">
+        <p class="text-xs font-semibold text-teal uppercase tracking-widest mb-1">Step 4 of 4</p>
+        <h2 class="font-serif text-2xl text-ink mb-1">How many hours can you study daily?</h2>
+        <p class="text-xs text-ink-muted">We'll build your plan around your schedule.</p>
+      </div>
+      <div class="space-y-3">
+        <div class="option-card" onclick="selectOption(this,'hours','Less than 2 hours')"><div class="option-dot"></div> Less than 2 hours</div>
+        <div class="option-card" onclick="selectOption(this,'hours','2–4 hours')"><div class="option-dot"></div> 2–4 hours</div>
+        <div class="option-card" onclick="selectOption(this,'hours','4–6 hours')"><div class="option-dot"></div> 4–6 hours</div>
+        <div class="option-card" onclick="selectOption(this,'hours','6–8 hours')"><div class="option-dot"></div> 6–8 hours</div>
+        <div class="option-card" onclick="selectOption(this,'hours','8+ hours')"><div class="option-dot"></div> 8+ hours</div>
+      </div>
+    </div>
+
+    <!-- Nav buttons -->
+    <div class="flex gap-3 mt-8">
+      <button id="backBtn" onclick="prevStep()" class="hidden px-6 py-3 border border-border rounded-xl text-sm font-semibold text-ink-muted hover:bg-bg transition-all">← Back</button>
+      <button id="nextBtn" onclick="nextStep()" class="flex-1 py-4 bg-ink text-white text-sm font-semibold rounded-xl shadow-md hover:bg-teal transition-all flex items-center justify-center gap-2 group">
+        <span id="nextLabel">Next</span>
+        <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+
+  <p class="text-center mt-6 text-xs text-ink-faint">
+    <a href="dashboard.html" class="hover:text-teal transition-colors">Skip for now →</a>
+  </p>
+
+</main>
+
+<script>
+  const answers = { exam: null, level: null, institution: null, hours: null };
+  let currentStep = 1;
+  const API_BASE = 'https://med-clarivo.onrender.com/api';
+  // ── Dynamic options based on exam ──────────────────────────
+  const DATA = {
+    'NEET UG': {
+      step2Title: 'Where are you in school?',
+      levels: ['Class 11 (Just started)', 'Class 12 (Appearing)', 'Dropper – 1st attempt', 'Dropper – 2nd attempt', 'Dropper – 3rd attempt or more'],
+      step3Title: "What's your dream medical college?",
+      step3Sub: "We'll help you target the right colleges.",
+      institutions: ['AIIMS New Delhi', 'AIIMS Mumbai / Jodhpur / Bhopal', 'Maulana Azad Medical College', 'Grant Medical College Mumbai', 'Any Top Government Medical College'],
+      repeaterKeyword: 'dropper',
+      scoreLabel: 'NEET', scoreMax: 720,
+    },
+    'NEET PG': {
+      step2Title: 'Where are you in your MBBS / PG prep?',
+      levels: ['1st year MBBS', '2nd year MBBS', '3rd year MBBS', 'Final year MBBS', 'Intern / Just completed MBBS', 'Repeater – already attempted NEET PG'],
+      step3Title: "What's your dream PG college?",
+      step3Sub: "Tell us where you want to specialize.",
+      institutions: ['AIIMS New Delhi (MD/MS)', 'PGI Chandigarh', 'JIPMER Puducherry', 'Maulana Azad Medical College PG', 'Any Top Government PG College'],
+      repeaterKeyword: 'repeater',
+      scoreLabel: 'NEET PG', scoreMax: 800,
+    },
+    'AIIMS': {
+      step2Title: 'Where are you in your MBBS / prep?',
+      levels: ['Final year MBBS', 'Intern', 'Completed MBBS – 1st attempt', 'Repeater – already attempted AIIMS PG'],
+      step3Title: "Which AIIMS specialty are you targeting?",
+      step3Sub: "Pick your dream department.",
+      institutions: ['Internal Medicine', 'Surgery', 'Paediatrics', 'Obstetrics & Gynaecology', 'Orthopaedics', 'Radiology', 'Anaesthesia'],
+      repeaterKeyword: 'repeater',
+      scoreLabel: 'AIIMS PG', scoreMax: 800,
+    },
+    'JIPMER': {
+      step2Title: 'Where are you in your MBBS / prep?',
+      levels: ['Final year MBBS', 'Intern', 'Completed MBBS – 1st attempt', 'Repeater – already attempted JIPMER PG'],
+      step3Title: "Which JIPMER specialty are you targeting?",
+      step3Sub: "Pick your dream department at JIPMER.",
+      institutions: ['Internal Medicine', 'Paediatrics', 'Surgery', 'Obstetrics & Gynaecology', 'Dermatology', 'Psychiatry', 'Ophthalmology'],
+      repeaterKeyword: 'repeater',
+      scoreLabel: 'JIPMER PG', scoreMax: 800,
+    },
+    'USMLE': {
+      step2Title: 'Which USMLE step are you preparing for?',
+      levels: ['Step 1', 'Step 2 CK', 'Step 3', 'Already passed Step 1 – preparing Step 2', 'Already passed Step 2 – preparing Step 3'],
+      step3Title: "Which country/residency are you targeting?",
+      step3Sub: "Tell us your residency goal.",
+      institutions: ['USA – Internal Medicine residency', 'USA – Surgery residency', 'USA – Paediatrics residency', 'USA – Family Medicine residency', 'Canada – IMG pathway', 'UK – PLAB pathway'],
+      repeaterKeyword: 'already passed',
+      scoreLabel: 'USMLE Step', scoreMax: 300,
+    },
+  };
+
+  function renderOptions(containerId, items, key) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'option-card';
+      div.innerHTML = `<div class="option-dot"></div> ${item}`;
+      div.onclick = function() { selectOption(this, key, item); };
+      container.appendChild(div);
+    });
+  }
+
+  function selectOption(el, key, value) {
+    el.closest('.step').querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    answers[key] = value;
+
+    // Generic repeater check: if level mentions the exam's repeater keyword → score mode
+    if (key === 'level') {
+      const data = DATA[answers.exam];
+      const isRepeater = value.toLowerCase().includes(data.repeaterKeyword);
+      toggleStep3Mode(isRepeater);
+    }
+  }
+
+  function toggleStep3Mode(isScoreMode) {
+    const optionsBox = document.getElementById('institutionOptions');
+    const scoreBox   = document.getElementById('scoreInputs');
+    const title      = document.getElementById('step3Title');
+    const sub        = document.getElementById('step3Sub');
+    const data       = DATA[answers.exam];
+
+    if (isScoreMode) {
+      optionsBox.classList.add('hidden');
+      scoreBox.classList.remove('hidden');
+      title.textContent = "Let's set your score goal";
+      sub.textContent   = "Tell us where you stood and where you're headed.";
+      document.getElementById('prevScoreLabel').textContent   = `Previous ${data.scoreLabel} Score`;
+      document.getElementById('targetScoreLabel').textContent = `Target ${data.scoreLabel} Score`;
+      document.getElementById('prevScore').max   = data.scoreMax;
+      document.getElementById('targetScore').max = data.scoreMax;
+      document.getElementById('prevScore').placeholder   = `e.g. ${Math.round(data.scoreMax * 0.7)}`;
+      document.getElementById('targetScore').placeholder = `e.g. ${Math.round(data.scoreMax * 0.9)}`;
+      answers.institution = 'score-mode'; // marks step as answerable
+    } else {
+      optionsBox.classList.remove('hidden');
+      scoreBox.classList.add('hidden');
+      title.textContent = data.step3Title;
+      sub.textContent   = data.step3Sub;
+      answers.institution = null;
+    }
+  }
+
+  function updateDots() {
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById(`dot-${i}`);
+      dot.className = 'step-dot';
+      if (i < currentStep) dot.classList.add('done');
+      else if (i === currentStep) dot.classList.add('active');
+    }
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  async function nextStep() {
+    const keys = ['exam', 'level', 'institution', 'hours'];
+    const key  = keys[currentStep - 1];
+
+    // Special validation for score-mode step 3
+    if (currentStep === 3 && answers.institution === 'score-mode') {
+      const prev   = document.getElementById('prevScore').value;
+      const target = document.getElementById('targetScore').value;
+      if (!prev || !target) {
+        return showToast('Please enter both scores to continue.', 'error');
+      }
+      answers.prevScore   = prev;
+      answers.targetScore = target;
+    } else if (!answers[key]) {
+      return showToast('Please select an option to continue.', 'error');
+    }
+
+ if (currentStep === 4) {
+      const token = localStorage.getItem('mc_token');
+      const nextBtnEl = document.getElementById('nextBtn');
+      nextBtnEl.disabled = true;
+      nextBtnEl.style.opacity = '0.7';
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/onboarding`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            exam:        answers.exam,
+            level:       answers.level,
+            institution: answers.institution === 'score-mode' ? null : answers.institution,
+            hours:       answers.hours,
+            prevScore:   answers.prevScore   ? Number(answers.prevScore)   : undefined,
+            targetScore: answers.targetScore ? Number(answers.targetScore) : undefined,
+          }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          localStorage.setItem('mc_user', JSON.stringify(data.user));
+          showToast('🎉 All set! Welcome to MedClarivo!', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 1200);
+        } else {
+          showToast(data.message || 'Could not save your preferences. Try again.', 'error');
+          nextBtnEl.disabled = false;
+          nextBtnEl.style.opacity = '1';
+        }
+      } catch (err) {
+        showToast('Cannot reach server. Please try again.', 'error');
+        nextBtnEl.disabled = false;
+        nextBtnEl.style.opacity = '1';
+      }
+      return;
+    }
+
+    // When moving from step 1 → populate dynamic steps
+    if (currentStep === 1) {
+      const data = DATA[answers.exam];
+      // Step 2
+      document.getElementById('step2Title').textContent = data.step2Title;
+      renderOptions('levelOptions', data.levels, 'level');
+      // Step 3 (default to options mode; will switch to score mode if dropper selected)
+      toggleStep3Mode(false);
+      renderOptions('institutionOptions', data.institutions, 'institution');
+      document.getElementById('prevScore').value = '';
+      document.getElementById('targetScore').value = '';
+      // Reset answers for steps 2-4 if user changed exam
+      answers.level = null; answers.institution = null; answers.hours = null;
+    }
+
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    currentStep++;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    updateDots();
+
+    document.getElementById('backBtn').classList.remove('hidden');
+    document.getElementById('nextLabel').textContent = currentStep === 4 ? 'Finish' : 'Next';
+  }
+
+  function prevStep() {
+    if (currentStep === 1) return;
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    currentStep--;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    updateDots();
+    if (currentStep === 1) document.getElementById('backBtn').classList.add('hidden');
+    document.getElementById('nextLabel').textContent = 'Next';
+  }
+
+  // Greet by name
+  const user = JSON.parse(localStorage.getItem('mc_user') || '{}');
+  if (user.name) {
+    document.getElementById('greetMsg').textContent = `Hey ${user.name.split(' ')[0]}! Let's personalise your experience.`;
+  }
+</script>
+</body>
+</html>
